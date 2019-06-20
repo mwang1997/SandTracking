@@ -37,6 +37,9 @@ container = av.open(videoName)
 for frame in container.decode(video = 0):
 	frames.append(frame.to_ndarray())
 
+plt.imshow(frames[0])
+plt.show()
+
 #f is a list of data for each Frame of Frames
 f = []
 
