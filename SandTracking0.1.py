@@ -34,6 +34,13 @@ frames = pims.as_grey(pims.PyAVReaderIndexed(videoName))
 #f is the DataFrame of VideoFrames
 f = tp.batch(frames[startFrame: startFrame + 50], particleSize, invert = False, minmass = particleTolerance)
 
+#pred is the prediction algorithm for particles motion assuming new particles are stationay
+pred = tp.predict.NearestVelocityPredict()
+
+#Data of particle trajectory
+t = pred.link_df_iter(f, memory = 3)
+
+
 tp.annotate(f, frames[1000])
 fig, ax = plt.subplots()
 ax.hist(f['mass'], bins=1000)
