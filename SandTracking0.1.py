@@ -14,7 +14,7 @@ from pims import pipeline
 
 print("Enter name of video")
 
-videoName = "/Users/markwang/Documents/LZU/Recordings/" + input()
+videoName = "Recordings/" + input()
 
 print("Enter average size of particles in pixels, as an odd number")
 
@@ -32,7 +32,7 @@ startFrame = int(input())
 frames = pims.as_grey(pims.PyAVReaderIndexed(videoName))
 
 #f is the DataFrame of VideoFrames
-f = tp.batch(frames[startFrame: startFrame + 20], particleSize, invert = False, minmass = particleTolerance, maxsize = 100, noise_size = 4)
+f = tp.batch(frames[startFrame: startFrame + 20], particleSize, invert = False, minmass = particleTolerance, noise_size = 4)
 
 #pred is the prediction algorithm for particles motion assuming new particles are stationay
 pred = tp.predict.NearestVelocityPredict()
