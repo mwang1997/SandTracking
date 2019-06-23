@@ -1,0 +1,5 @@
+# Compiled source #
+###################
+*.mov
+*.mp4
+*.DS_Store

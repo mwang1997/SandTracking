@@ -1,4 +1,0 @@
-# Ignore everything in this directory
-*
-# Set up to allow users to add their own videos
-!.gitignore
