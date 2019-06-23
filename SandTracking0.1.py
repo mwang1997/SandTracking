@@ -19,6 +19,7 @@ class particle:
 		self.ID = ID
 		self.diameter = 0
 		self.ecc = 0
+		self.irregular = 0
 
 		#Tuples of 0th, 1st, 2nd, 3rd derivatives of position
 		self.coords = []
@@ -27,7 +28,7 @@ class particle:
 		self.jerk = []
 		self.index = []
 
-		self.average_y_vel = 0
+		self.average_vel = (0, 0)
 
 	def add_frame(self, coord, diameter, ecc, index):
 		self.diameter = (self.diameter * len(self.coords) + diameter) / (len(self.coords) + 1)
@@ -44,9 +45,15 @@ class particle:
 			t = (self.coords[i + 1][2] + self.coords[i][2]) / 2
 
 			self.vel.append(((self.coords[i + 1][0] - self.coords[i][0]) / dt, (self.coords[i + 1][1] - self.coords[i][1]) / dt, t))
-			self.average_y_vel  += (self.coords[i + 1][1] - self.coords[i][1]) / dt
+			self.average_vel  = (self.average_vel[0] + self.vel[-1][0], 
+								self.average_vel[1] + self.vel[-1][1])
 
-		self.average_y_vel /= len(self.coords)
+			#Filters velocity direction from changing
+			if self.vel[-1][0] * self.average_vel[0] < 0 or self.vel[-1][1] * self.average_vel[1] < 0:
+				self.irregular += 1
+
+		#Used to filter out particles that are not dropping down due to gravity
+		self.average_vel = (self.average_vel[0] / len(self.coords), self.average_vel[1] / len(self.coords))
 
 	def calc_accel(self):
 		#Goes through all the velocities and calculates drag
@@ -119,13 +126,11 @@ particle_dict = extractParticles(t).copy()
 #Caclulates all necessary parameters
 for p in particle_dict.values():
 	p.analyze()
-	for c in p.coords:
-		print(str(c) + " " + str(p.ID))
 
 #Post Filtering
 for p in particle_dict.copy().values():
-	#If the y velocity is not low enough or the particles do not appear enough
-	if p.average_y_vel > 500 or len(p.coords) < 10:
+	#If the y velocity is not low enough or the particles do not often appear enough
+	if p.average_vel[1] < 5000 or len(p.coords) < 10 or p.irregular != 0:
 		particle_dict.pop(p.ID)
 
 		#remove from 
@@ -133,6 +138,9 @@ for p in particle_dict.copy().values():
 			particle.used_index.remove(i)
 
 t = t.loc[particle.used_index]
+
+for p in particle_dict.values():
+	print(p.average_vel[1])
 
 print(t)
 
