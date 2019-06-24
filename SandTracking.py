@@ -135,7 +135,7 @@ startFrame = int(input())
 frames = pims.as_grey(pims.PyAVReaderIndexed(videoName))
 
 #f is the DataFrame of VideoFrames
-f = tp.batch(frames[startFrame: startFrame + 50], particleSize, invert = False, minmass = particleTolerance, noise_size = 4)
+f = tp.batch(frames[startFrame: startFrame + 50], particleSize, minmass = particleTolerance, noise_size = 4)
 
 #pred is the prediction algorithm for particles motion assuming new particles are stationay
 pred = tp.predict.NearestVelocityPredict()
@@ -166,10 +166,47 @@ for p in particle_dict.copy().values():
 t = t.loc[particle.used_index]
 
 for p in particle_dict.values():
-	print(p.average)
+	print(p.vel)
+	print(p.accel)
+	print(p.jerk)
 
 
 print(t)
+
+#data to turn into excel sheets
+raw_data = t.copy()
+velocity_data = dict({"x_vel": [], "y_vel": [], "frame": [], "particle": []})
+acceleration_data = dict({"x_accel": [], "y_accel": [], "frame": [], "particle": []})
+jerk_data = dict({"x_jerk": [], "y_jerk": [], "frame": [], "particle": []})
+
+for p in particle_dict.values():
+	for i in range (0, len(p.vel)):
+		velocity_data["x_vel"].append(p.vel[i][0])
+		velocity_data["y_vel"].append(p.vel[i][1])
+		velocity_data["frame"].append(p.vel[i][2])
+		velocity_data["particle"].append(p.ID)
+
+		if i < len(p.accel):
+			acceleration_data["x_accel"].append(p.accel[i][0])
+			acceleration_data["y_accel"].append(p.accel[i][1])
+			acceleration_data["frame"].append(p.accel[i][2])
+			acceleration_data["particle"].append(p.ID)
+
+		if i < len(p.jerk):
+			jerk_data["x_jerk"].append(p.jerk[i][0])
+			jerk_data["y_jerk"].append(p.jerk[i][1])
+			jerk_data["frame"].append(p.jerk[i][2])
+			jerk_data["particle"].append(p.ID)
+
+velocity_data = pd.DataFrame.from_dict(velocity_data)
+acceleration_data = pd.DataFrame.from_dict(acceleration_data)
+jerk_data = pd.DataFrame.from_dict(jerk_data)
+
+with pd.ExcelWriter("output.xlsx") as writer:
+	raw_data.to_excel(writer, sheet_name = "raw data")
+	velocity_data.to_excel(writer, sheet_name = "velocity data")
+	acceleration_data.to_excel(writer, sheet_name = "acceleration data")
+	jerk_data.to_excel(writer, sheet_name = "jerk data")
 
 plt.figure()
 tp.plot_traj(t)
