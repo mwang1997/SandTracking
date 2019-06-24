@@ -98,7 +98,6 @@ class particle:
 def extractParticles(traj):
 	#return dictionary
 	particles = dict()
-	print(traj.shape[0])
 
 	for i in range (0, traj.shape[0]):
 		#ID of Particle
@@ -112,11 +111,13 @@ def extractParticles(traj):
 	return particles
 
 #filter stub that doesn't delete the index 
-def better_filter_stubs(data_frame, i):
+def fixed_filter_stubs(data_frame, i):
 	t = tp.filter_stubs(data_frame, i)
 	t.index = range(0, len(t))
 
 	return t
+
+##Execution##
 
 print("Enter name of video")
 videoName = "Recordings/" + input()
@@ -141,12 +142,12 @@ pred = tp.predict.NearestVelocityPredict()
 
 #Data of particle trajectory, in DataFrame and Dictionary form
 t = pred.link_df(f, 50, memory = 1)
-t = better_filter_stubs(t, 10)
+t = fixed_filter_stubs(t, 10)
 
 print(t)
 
 #Converted to particles containing their trajectories
-particle_dict = extractParticles(t).copy()
+particle_dict = extractParticles(t)
 
 #Caclulates all necessary parameters
 for p in particle_dict.values():
@@ -155,7 +156,7 @@ for p in particle_dict.values():
 #Post Filtering
 for p in particle_dict.copy().values():
 	#If the particle is effectively stationary or the particles experience collision
-	if (p.average[0][1] < 1000 and p.average[0][1] < 1000) or p.irregular > 0:
+	if (abs(p.average[0][1]) < 1000 and abs(p.average[0][1] < 1000)) or p.irregular > 0:
 		particle_dict.pop(p.ID)
 
 		#remove from 
@@ -165,9 +166,8 @@ for p in particle_dict.copy().values():
 t = t.loc[particle.used_index]
 
 for p in particle_dict.values():
-	print(p.average[0])
-	print(p.average[1])
-	print(p.average[2])
+	print(p.average)
+
 
 print(t)
 
