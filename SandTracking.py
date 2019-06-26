@@ -97,9 +97,17 @@ class particle:
 		self.calc_accel()
 		self.calc_jerk()
 
+@pims.pipeline
+def as_grey(frame):
+        red = frame[:, :, 0]
+        blue = frame[:, :, 1]
+        green = frame[:, :, 2]
+
+        return red * 0.2125 * red + 0.7154 * green + 0.0721 * blue
+
 def evaluate_features(video_name, particle_size, particle_tolerance, start_frame, frame_length):
 	#frames is an numpy array of video frames
-	frames = pims.as_grey(pims.PyAVReaderIndexed(video_name))
+	frames = as_grey(pims.PyAVReaderIndexed(video_name))
 
 	#f is the DataFrame of VideoFrames
 	f = tp.batch(frames[start_frame: start_frame + frame_length], particle_size, minmass = particle_tolerance, noise_size = 4)
