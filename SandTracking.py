@@ -11,11 +11,6 @@ import pims
 import pandas as pd
 from pandas import DataFrame, Series
 
-
-
-#The Dataframe
-df = pd.DataFrame()
-
 #All the x and y coordinate values of a particle with their frame and ID
 class particle:
 	used_index = []
@@ -111,17 +106,19 @@ def evaluate_features(video_name, particle_size, particle_tolerance, start_frame
 	#frames is an numpy array of video frames
 	frames = to_grey(pims.PyAVReaderTimed(video_name))
 
+	print(len(frames))
+
 	#f is the DataFrame of VideoFrames
 	f = tp.batch(frames[start_frame: start_frame + frame_length], particle_size, minmass = particle_tolerance, noise_size = 4)
 
 	return f
 
-def evaluate_trajectories(data_frame, search_size, particle_memory):
+def evaluate_trajectories(data_frame, search_size, lb_search_size, step, particle_memory):
 	#pred is the prediction algorithm for particles motion assuming new particles are stationay
 	pred = tp.predict.NearestVelocityPredict()
 	#Gets the DataFrame of the trajectories
-	
-	t = pred.link_df(data_frame, search_size, memory = particle_memory)
+				
+	t = pred.link_df(data_frame, search_size, adaptive_stop = lb_search_size, adaptive_step = step, memory = particle_memory)
 
 	return t
 
@@ -164,7 +161,9 @@ def postfiltering(data_frame, particles, stillness, irregularity_tolerance):
 
 	data_frame = data_frame.loc[particle.used_index]
 
-def export(data_frame, particles):
+	return data_frame
+
+def export(data_frame, particles, video_name):
 	#data to turn into excel sheets
 	raw_data = data_frame.copy()
 	velocity_data = dict({"x_vel": [], "y_vel": [], "frame": [], "particle": []})
@@ -194,7 +193,7 @@ def export(data_frame, particles):
 	acceleration_data = pd.DataFrame.from_dict(acceleration_data)
 	jerk_data = pd.DataFrame.from_dict(jerk_data)
 
-	with pd.ExcelWriter("output.xlsx") as writer:
+	with pd.ExcelWriter("output" + video_name + ".xlsx") as writer:
 		raw_data.to_excel(writer, sheet_name = "raw data")
 		velocity_data.to_excel(writer, sheet_name = "velocity data")
 		acceleration_data.to_excel(writer, sheet_name = "acceleration data")
@@ -218,12 +217,15 @@ print("Enter the number of frames to evaluate")
 frameLength = int(input())
 
 t = evaluate_features(videoName, particleSize, particleTolerance, startFrame, frameLength)
-t = evaluate_trajectories(t, 50, 3)
-t = fixed_filter_stubs(t, 10)
+t = evaluate_trajectories(t, 50, 10, 0.99, 3)
+t = fixed_filter_stubs(t, 10)	
 
 particles = extract_particles(t)
 
-postfiltering(t, particles, 1000, 0)
+t = postfiltering(t, particles, 1000, 0)
 export(t, particles)
+
+ax = tp.plot_traj(t)
+plt.show()
 
 
