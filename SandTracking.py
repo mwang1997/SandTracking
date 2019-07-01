@@ -19,7 +19,7 @@ class particle:
 		self.ID = ID
 		self.diameter = 0
 		self.ecc = 0
-		self.irregular = 0
+		self.irregular = []
 
 		#Tuples of position and its 1st, 2nd and 3rd derivatives
 		self.coords = []
@@ -34,9 +34,12 @@ class particle:
 	def add_index(self, coord, diameter, ecc, index):
 		self.diameter = (self.diameter * len(self.coords) + diameter) / (len(self.coords) + 1)
 		self.ecc = (self.ecc * len(self.coords) + ecc) / (len(self.coords) + 1)
-		self.used_index.append(index)
 		self.index.append(index)
 		self.coords.append(coord)
+
+		#Checks to not double add
+		if not index in self.used_index:
+			self.used_index.append(index)
 
 	def calc_vel(self):
 		self.average.append((0, 0))
@@ -50,8 +53,8 @@ class particle:
 			self.vel.append(((self.coords[i + 1][0] - self.coords[i][0]) / dt, (self.coords[i + 1][1] - self.coords[i][1]) / dt, t))
 
 			#Filters velocity direction from changing
-			if self.vel[-1][0] * self.average[-1][0] < 0 or self.vel[-1][1] * self.average[-1][1] < 0:
-				self.irregular += 1
+			if len(self.vel) > 1 and (self.vel[-1][0] * self.vel[-2][0] < 0 or self.vel[-1][1] * self.vel[-2][1] < 0):
+				self.irregular.append(self.index[i])
 
 			self.average[-1]  = (self.average[-1][0] + self.vel[-1][0], self.average[-1][1] + self.vel[-1][1])
 
@@ -61,7 +64,6 @@ class particle:
 	def calc_accel(self):
 		self.average.append((0, 0))
 
-
 		#Goes through all the velocities and calculates drag
 		for i in range (0, len(self.vel) - 1):
 			#The time that the velocity is calculated at, with FPS
@@ -69,10 +71,8 @@ class particle:
 			t = (self.vel[i + 1][2] + self.vel[i][2]) / 2
 
 			self.accel.append(((self.vel[i + 1][0] - self.vel[i][0]) / dt, (self.vel[i + 1][1] - self.vel[i][1]) / dt, t))
-			self.average[-1]  = (self.average[-1][0] + self.accel[-1][0], self.average[-1][1] + self.accel[-1][1])
-
-		#Used to filter out particles that are not dropping down due to gravity
-		self.average[-1] = (self.average[-1][0] / len(self.accel), self.average[-1][1] / len(self.accel))
+			self.average[-1]  = ((self.average[-1][0] * len(self.accel) + self.accel[-1][0]) / (len(self.accel) + 1), 
+								(self.average[-1][1] * len(self.accel) + self.accel[-1][1]) / (len(self.accel) + 1))
 
 	def calc_jerk(self):
 		self.average.append((0, 0))
@@ -106,8 +106,6 @@ def evaluate_features(video_name, particle_size, particle_tolerance, start_frame
 	#frames is an numpy array of video frames
 	frames = to_grey(pims.PyAVReaderTimed(video_name))
 
-	print(len(frames))
-
 	#f is the DataFrame of VideoFrames
 	f = tp.batch(frames[start_frame: start_frame + frame_length], particle_size, minmass = particle_tolerance, noise_size = 4)
 
@@ -121,7 +119,6 @@ def evaluate_trajectories(data_frame, search_size, lb_search_size, step, particl
 	t = pred.link_df(data_frame, search_size, adaptive_stop = lb_search_size, adaptive_step = step, memory = particle_memory)
 
 	return t
-
 
 #Returns a Dictionary containing a list of particle motion from a trajectory DataFrame
 def extract_particles(traj):
@@ -139,6 +136,57 @@ def extract_particles(traj):
 
 	return particles
 
+#Splits a single particle and returns another particle
+def split(data_frame, p, filter_stub):
+		return_particles = []
+		for x in range(0, len(p.irregular)):
+			return_particles.append(particle(data_frame.max()[9] + 1 + x))
+
+		i_indices = [0]
+		for x in p.irregular:
+			for y in p.index:
+				if x == y:
+					i_indices.append(0)
+					break
+				else:
+					i_indices[-1] += 1
+
+		return_index = 0
+		for x in p.index:
+			#if you've reached the proper index
+			if x in i_indices:
+				return_index += 1
+
+			return_particles[return_index].add_index((data_frame.at[x, "x"], data_frame.at[x, "y"], data_frame.at[x, "frame"]), 
+													data_frame.at[x, "size"] * 2, data_frame.at[x, "ecc"], x)
+
+		for rp in return_particles.copy():
+			if len(rp.coords) < filter_stub:
+				for x in range(0, len(return_particles)):
+					if return_particles[x].ID == rp.ID:
+						return_particles.pop(x)
+						break;
+				for x in rp.index:
+					particle.used_index.pop(x)
+
+		for rp in return_particles:
+			rp.analyze()
+			for x in rp.index:
+				data_frame.at[x, "particle"] = rp.ID
+
+		return return_particles
+
+def unfilter_jumps(data_frame, particles, filter_stub):
+	#For all the particles
+	for p in particles.copy().values():
+		if not len(p.irregular) == 0:
+			new_particles = split(data_frame, p, filter_stub)
+			particles.pop(p.ID)
+			for split_particles in new_particles:
+				particles[split_particles.ID] = split_particles
+
+	return data_frame.loc[particle.used_index]
+
 #filter stub that doesn't delete the index 
 def fixed_filter_stubs(data_frame, i):
 	t = tp.filter_stubs(data_frame, i)
@@ -146,13 +194,13 @@ def fixed_filter_stubs(data_frame, i):
 
 	return t
 
-def postfiltering(data_frame, particles, stillness, irregularity_tolerance):
+def postfiltering(data_frame, particles, stillness, tolerance):
 	#Post Filtering
 	for p in particles.copy().values():
 		p.analyze()
 
 		#If the particle is effectively stationary or the particles experience collision
-		if (abs(p.average[0][1]) < stillness and abs(p.average[0][1] < stillness)) or p.irregular > irregularity_tolerance:
+		if (abs(p.average[0][1]) < stillness and abs(p.average[0][1] < stillness)) or len(p.irregular) > tolerance:
 			particles.pop(p.ID)
 
 			#remove from 
@@ -163,7 +211,7 @@ def postfiltering(data_frame, particles, stillness, irregularity_tolerance):
 
 	return data_frame
 
-def export(data_frame, particles, video_name):
+def export(data_frame, particles):
 	#data to turn into excel sheets
 	raw_data = data_frame.copy()
 	velocity_data = dict({"x_vel": [], "y_vel": [], "frame": [], "particle": []})
@@ -193,7 +241,7 @@ def export(data_frame, particles, video_name):
 	acceleration_data = pd.DataFrame.from_dict(acceleration_data)
 	jerk_data = pd.DataFrame.from_dict(jerk_data)
 
-	with pd.ExcelWriter("output" + video_name + ".xlsx") as writer:
+	with pd.ExcelWriter("output.xlsx") as writer:
 		raw_data.to_excel(writer, sheet_name = "raw data")
 		velocity_data.to_excel(writer, sheet_name = "velocity data")
 		acceleration_data.to_excel(writer, sheet_name = "acceleration data")
@@ -218,11 +266,15 @@ frameLength = int(input())
 
 t = evaluate_features(videoName, particleSize, particleTolerance, startFrame, frameLength)
 t = evaluate_trajectories(t, 50, 10, 0.99, 3)
-t = fixed_filter_stubs(t, 10)	
+t = fixed_filter_stubs(t, 10)
 
 particles = extract_particles(t)
 
 t = postfiltering(t, particles, 1000, 0)
+#t = unfilter_jumps(t, particles, 10)
+
+print(t)
+
 export(t, particles)
 
 ax = tp.plot_traj(t)
