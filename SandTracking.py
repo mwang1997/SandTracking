@@ -139,22 +139,13 @@ def extract_particles(traj):
 #Splits a single particle and returns another particle
 def split(data_frame, p, filter_stub):
 		return_particles = []
-		for x in range(0, len(p.irregular)):
+		for x in range(0, len(p.irregular) + 1):
 			return_particles.append(particle(data_frame.max()[9] + 1 + x))
-
-		i_indices = [0]
-		for x in p.irregular:
-			for y in p.index:
-				if x == y:
-					i_indices.append(0)
-					break
-				else:
-					i_indices[-1] += 1
 
 		return_index = 0
 		for x in p.index:
-			#if you've reached the proper index
-			if x in i_indices:
+			#if you've reached the irregularity index
+			if x in p.irregular:
 				return_index += 1
 
 			return_particles[return_index].add_index((data_frame.at[x, "x"], data_frame.at[x, "y"], data_frame.at[x, "frame"]), 
@@ -167,13 +158,15 @@ def split(data_frame, p, filter_stub):
 						return_particles.pop(x)
 						break;
 				for x in rp.index:
-					particle.used_index.pop(x)
+					particle.used_index.remove(x)
 
 		for rp in return_particles:
 			rp.analyze()
 			for x in rp.index:
 				data_frame.at[x, "particle"] = rp.ID
 
+		data_frame = data_frame.loc[particle.used_index]
+			
 		return return_particles
 
 def unfilter_jumps(data_frame, particles, filter_stub):
@@ -270,10 +263,10 @@ t = fixed_filter_stubs(t, 10)
 
 particles = extract_particles(t)
 
-t = postfiltering(t, particles, 1000, 0)
-#t = unfilter_jumps(t, particles, 10)
+t = postfiltering(t, particles, 5000, 3)
+t = unfilter_jumps(t, particles, 3)
 
-print(t)
+#print(t)
 
 export(t, particles)
 
