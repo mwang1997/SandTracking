@@ -7,6 +7,7 @@ import trackpy as tp
 
 import av
 import pims
+import math
 
 import pandas as pd
 from pandas import DataFrame, Series
@@ -53,7 +54,7 @@ class particle:
 			self.vel.append(((self.coords[i + 1][0] - self.coords[i][0]) / dt, (self.coords[i + 1][1] - self.coords[i][1]) / dt, t))
 
 			#Filters velocity direction from changing
-			if len(self.vel) > 1 and (self.vel[-1][0] * self.vel[-2][0] < 0 or self.vel[-1][1] * self.vel[-2][1] < 0):
+			if len(self.vel) > 1 and get_cos(self.vel[-1], self.vel[-2]) < math.cos(math.pi * 15 / 180):
 				self.irregular.append(self.index[i])
 
 			self.average[-1]  = (self.average[-1][0] + self.vel[-1][0], self.average[-1][1] + self.vel[-1][1])
@@ -86,13 +87,16 @@ class particle:
 			self.jerk.append(((self.accel[i + 1][0] - self.accel[i][0]) / dt, (self.accel[i + 1][1] - self.accel[i][1]) / dt, t))
 			self.average[-1]  = (self.average[-1][0] + self.jerk[-1][0], self.average[-1][1] + self.jerk[-1][1])
 
-		#Used to filter out particles that are not dropping down due to gravity
-		self.average[-1] = (self.average[-1][0] / len(self.jerk), self.average[-1][1] / len(self.jerk))
-
 	def analyze(self):
 		self.calc_vel()
 		self.calc_accel()
 		self.calc_jerk()
+
+def get_cos(v1, v2):
+	numerator = v1[0] * v2[0] + v1[1] * v2[1]
+	denominator = math.sqrt(math.pow(v1[0], 2) + math.pow(v1[1], 2)) * math.sqrt(math.pow(v2[0], 2) + math.pow(v2[1], 2))
+
+	return numerator / denominator
 
 @pims.pipeline
 def to_grey(frame):
@@ -105,6 +109,9 @@ def to_grey(frame):
 def evaluate_features(video_name, particle_size, particle_tolerance, start_frame, frame_length):
 	#frames is an numpy array of video frames
 	frames = to_grey(pims.PyAVReaderTimed(video_name))
+
+	f1 = tp.locate(frames[0], 11)
+	tp.annotate(f1, frames[0])
 
 	#f is the DataFrame of VideoFrames
 	f = tp.batch(frames[start_frame: start_frame + frame_length], particle_size, minmass = particle_tolerance, noise_size = 4)
@@ -263,8 +270,8 @@ t = fixed_filter_stubs(t, 10)
 
 particles = extract_particles(t)
 
-t = postfiltering(t, particles, 5000, 3)
-t = unfilter_jumps(t, particles, 3)
+t = postfiltering(t, particles, 5000, math.inf)
+t = unfilter_jumps(t, particles, 10)
 
 #print(t)
 
