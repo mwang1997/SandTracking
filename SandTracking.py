@@ -110,9 +110,6 @@ def evaluate_features(video_name, particle_size, particle_tolerance, start_frame
 	#frames is an numpy array of video frames
 	frames = to_grey(pims.PyAVReaderTimed(video_name))
 
-	f1 = tp.locate(frames[0], 11)
-	tp.annotate(f1, frames[0])
-
 	#f is the DataFrame of VideoFrames
 	f = tp.batch(frames[start_frame: start_frame + frame_length], particle_size, minmass = particle_tolerance, noise_size = 4)
 
