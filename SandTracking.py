@@ -40,7 +40,7 @@ class particle:
 		self.coords.append(coord)
 
 		#Checks to not double add
-		if not index in self.used_index:
+		if index not in self.used_index:
 			self.used_index.append(index)
 
 	def calc_polyline(self):
@@ -53,7 +53,7 @@ class particle:
 
 		self.polyline = np.poly1d(np.polyfit(np.array(x), np.array(y), 3))
 
-	def calc_vel(self):
+	def calc_vel(self, angle):
 		self.average.append((0, 0))
 
 		#Goes through all the coordinates and calculates velocity
@@ -65,7 +65,7 @@ class particle:
 			self.vel.append(((self.coords[i + 1][0] - self.coords[i][0]) / dt, (self.coords[i + 1][1] - self.coords[i][1]) / dt, t))
 
 			#Filters velocity direction from changing from a certain angle
-			if len(self.vel) > 1 and get_cos(self.vel[-1], self.vel[-2]) < math.cos(math.pi * 15 / 180):
+			if len(self.vel) > 1 and get_cos(self.vel[-1], self.vel[-2]) < math.cos(angle):
 				self.irregular.append(self.index[i])
 
 			self.average[-1]  = (self.average[-1][0] + self.vel[-1][0], self.average[-1][1] + self.vel[-1][1])
@@ -98,9 +98,9 @@ class particle:
 			self.jerk.append(((self.accel[i + 1][0] - self.accel[i][0]) / dt, (self.accel[i + 1][1] - self.accel[i][1]) / dt, t))
 			self.average[-1]  = (self.average[-1][0] + self.jerk[-1][0], self.average[-1][1] + self.jerk[-1][1])
 
-	def analyze(self):
+	def analyze(self, angle):
 		self.calc_polyline()
-		self.calc_vel()
+		self.calc_vel(angle)
 		self.calc_accel()
 		self.calc_jerk()
 
@@ -145,7 +145,7 @@ def extract_particles(traj):
 		#ID of Particle
 		ID = traj.at[i, "particle"]
 
-		if not ID in particles:
+		if ID not in particles:
 			particles[ID] = particle(ID)
 
 		particles[ID].add_index((traj.at[i, "x"], traj.at[i, "y"], traj.at[i, "frame"]), traj.at[i, "size"] * 2, traj.at[i, "ecc"], i)
@@ -153,7 +153,7 @@ def extract_particles(traj):
 	return particles
 
 #Splits a single particle and returns another particle
-def split(data_frame, p, filter_stub):
+def split(data_frame, p, filter_stub, angle):
 		return_particles = []
 		for x in range(0, len(p.irregular) + 1):
 			return_particles.append(particle(data_frame.max()[9] + 1 + x))
@@ -177,7 +177,7 @@ def split(data_frame, p, filter_stub):
 					particle.used_index.remove(x)
 
 		for rp in return_particles:
-			rp.analyze()
+			rp.analyze(angle)
 			for x in rp.index:
 				data_frame.at[x, "particle"] = rp.ID
 
@@ -186,7 +186,7 @@ def split(data_frame, p, filter_stub):
 		return return_particles
 
 #Remerge previously unaffiliated trajectories
-def merge(data_frame, particles, error_tolerance):
+def merge(data_frame, particles, error_tolerance, angle):
 	evaluated_particles = []
 
 	for p1 in particles.copy():
@@ -195,7 +195,7 @@ def merge(data_frame, particles, error_tolerance):
 		lse = 0
 
 		for p2 in particles.copy():
-			if not p2.ID in evaluated_particles:
+			if p2.ID not in evaluated_particles:
 				for i in range(0, len(p2.coords)):
 					lse += math.pow(poly(p2.coords[i][0]) - p2.coords[i][1], 2)
 
@@ -210,17 +210,17 @@ def merge(data_frame, particles, error_tolerance):
 								data_frame.at[x, "particle"] = particles[i].ID
 								particles[i].add_index((data_frame.at[x, "x"], data_frame.at[x, "y"], data_frame.at[x, "frame"]), 
 													data_frame.at[x, "size"] * 2, data_frame.at[x, "ecc"], x)
-							particles[i].analyze()
+							particles[i].analyze(angle)
 						if particles[i].ID == p2.ID:
 							particles.pop(i)
 
 	return particles
 
-def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance):
+def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle):
 	#For all the particles
 	for p in particles.copy().values():
 		if not len(p.irregular) == 0:
-			new_particles = merge(data_frame, split(data_frame, p, filter_stub), error_tolerance)
+			new_particles = merge(data_frame, split(data_frame, p, filter_stub, angle), error_tolerance, angle)
 			particles.pop(p.ID)
 			for split_particles in new_particles:
 				particles[split_particles.ID] = split_particles
@@ -234,10 +234,10 @@ def fixed_filter_stubs(data_frame, i):
 
 	return t
 
-def postfiltering(data_frame, particles, stillness, tolerance):
+def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tolerance, filter_stub):
 	#Post Filtering
 	for p in particles.copy().values():
-		p.analyze()
+		p.analyze(angle)
 
 		#If the particle is effectively stationary or the particles experience collision
 		if (abs(p.average[0][1]) < stillness and abs(p.average[0][1] < stillness)) or len(p.irregular) > tolerance:
@@ -246,6 +246,8 @@ def postfiltering(data_frame, particles, stillness, tolerance):
 			#remove from 
 			for i in p.index:
 				particle.used_index.remove(i)
+
+	unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle)
 
 	data_frame = data_frame.loc[particle.used_index]
 
@@ -310,8 +312,7 @@ t = fixed_filter_stubs(t, 10)
 
 particles = extract_particles(t)
 
-t = postfiltering(t, particles, 5000, math.inf)
-t = unfilter_jumps(t, particles, 10, 0)
+t = postfiltering(t, particles, 5000, math.inf, math.pi * 15 / 180, 500, 10)
 
 #print(t)
 
