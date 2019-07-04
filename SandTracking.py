@@ -20,7 +20,7 @@ class particle:
 		self.ID = ID
 		self.diameter = 0
 		self.ecc = 0
-		self.irregular = []
+		self.polyline = None
 
 		#Tuples of position and its 1st, 2nd and 3rd derivatives
 		self.coords = []
@@ -29,6 +29,7 @@ class particle:
 		self.jerk = []
 		
 		#Bookkeeping information with index 0 of average being velocity, etc etc
+		self.irregular = []
 		self.average = []
 		self.index = []
 
@@ -42,6 +43,16 @@ class particle:
 		if not index in self.used_index:
 			self.used_index.append(index)
 
+	def calc_polyline(self):
+		x = []
+		y = []
+
+		for i in range(0, len(self.coords)):
+			x.append(self.coords[i][0])
+			y.append(self.coords[i][1])
+
+		self.polyline = np.poly1d(np.polyfit(np.array(x), np.array(y), 3))
+
 	def calc_vel(self):
 		self.average.append((0, 0))
 
@@ -53,7 +64,7 @@ class particle:
 
 			self.vel.append(((self.coords[i + 1][0] - self.coords[i][0]) / dt, (self.coords[i + 1][1] - self.coords[i][1]) / dt, t))
 
-			#Filters velocity direction from changing
+			#Filters velocity direction from changing from a certain angle
 			if len(self.vel) > 1 and get_cos(self.vel[-1], self.vel[-2]) < math.cos(math.pi * 15 / 180):
 				self.irregular.append(self.index[i])
 
@@ -88,6 +99,7 @@ class particle:
 			self.average[-1]  = (self.average[-1][0] + self.jerk[-1][0], self.average[-1][1] + self.jerk[-1][1])
 
 	def analyze(self):
+		self.calc_polyline()
 		self.calc_vel()
 		self.calc_accel()
 		self.calc_jerk()
@@ -170,14 +182,45 @@ def split(data_frame, p, filter_stub):
 				data_frame.at[x, "particle"] = rp.ID
 
 		data_frame = data_frame.loc[particle.used_index]
-			
+
 		return return_particles
 
-def unfilter_jumps(data_frame, particles, filter_stub):
+#Remerge previously unaffiliated trajectories
+def merge(data_frame, particles, error_tolerance):
+	evaluated_particles = []
+
+	for p1 in particles.copy():
+		evaluated_particles.append(p1.ID)
+		poly = p1.polyline
+		lse = 0
+
+		for p2 in particles.copy():
+			if not p2.ID in evaluated_particles:
+				for i in range(0, len(p2.coords)):
+					lse += math.pow(poly(p2.coords[i][0]) - p2.coords[i][1], 2)
+
+				lse = math.sqrt(lse / len(p2.coords))
+				print(lse)
+
+				if lse < error_tolerance:
+					evaluated_particles.append(p2.ID)
+					for i in range(0, len(particles)):
+						if particles[i].ID == p1.ID:
+							for x in p2.index:
+								data_frame.at[x, "particle"] = particles[i].ID
+								particles[i].add_index((data_frame.at[x, "x"], data_frame.at[x, "y"], data_frame.at[x, "frame"]), 
+													data_frame.at[x, "size"] * 2, data_frame.at[x, "ecc"], x)
+							particles[i].analyze()
+						if particles[i].ID == p2.ID:
+							particles.pop(i)
+
+	return particles
+
+def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance):
 	#For all the particles
 	for p in particles.copy().values():
 		if not len(p.irregular) == 0:
-			new_particles = split(data_frame, p, filter_stub)
+			new_particles = merge(data_frame, split(data_frame, p, filter_stub), error_tolerance)
 			particles.pop(p.ID)
 			for split_particles in new_particles:
 				particles[split_particles.ID] = split_particles
@@ -268,7 +311,7 @@ t = fixed_filter_stubs(t, 10)
 particles = extract_particles(t)
 
 t = postfiltering(t, particles, 5000, math.inf)
-t = unfilter_jumps(t, particles, 10)
+t = unfilter_jumps(t, particles, 10, 0)
 
 #print(t)
 
