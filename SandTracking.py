@@ -124,6 +124,9 @@ def evaluate_features(video_name, particle_size, particle_tolerance, start_frame
 
 	#f is the DataFrame of VideoFrames
 	f = tp.batch(frames[start_frame: start_frame + frame_length], particle_size, minmass = particle_tolerance, noise_size = 4)
+	f1 = tp.locate(frames[15], particle_size, minmass = particle_tolerance, noise_size = 4)
+
+	tp.annotate(f1, frames[15])
 
 	return f
 
@@ -288,37 +291,3 @@ def export(data_frame, particles):
 		velocity_data.to_excel(writer, sheet_name = "velocity data")
 		acceleration_data.to_excel(writer, sheet_name = "acceleration data")
 		jerk_data.to_excel(writer, sheet_name = "jerk data")
-
-##Execution##
-
-print("Enter name of video")
-videoName = "Recordings/" + input()
-
-print("Enter average size of particles in pixels, as an odd number")
-particleSize = int(input())
-
-print("Enter the parameter minimum illumination mass to filter detection")
-particleTolerance = int(input())
-
-print("Enter the frame to start from")
-startFrame = int(input())
-
-print("Enter the number of frames to evaluate")
-frameLength = int(input())
-
-t = evaluate_features(videoName, particleSize, particleTolerance, startFrame, frameLength)
-t = evaluate_trajectories(t, 50, 10, 0.99, 3)
-t = fixed_filter_stubs(t, 10)
-
-particles = extract_particles(t)
-
-t = postfiltering(t, particles, 5000, math.inf, math.pi * 15 / 180, 500, 10)
-
-#print(t)
-
-export(t, particles)
-
-ax = tp.plot_traj(t)
-plt.show()
-
-
