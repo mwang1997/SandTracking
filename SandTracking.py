@@ -441,3 +441,15 @@ def export(data_frame, particles = None):
 			velocity_data.to_excel(writer, sheet_name = "velocity data")
 			acceleration_data.to_excel(writer, sheet_name = "acceleration data")
 			jerk_data.to_excel(writer, sheet_name = "jerk data")
+
+def hist(f, bins):
+	plt.figure()
+	fig, ax = plt.subplots()
+	ax.hist(f['size'], bins = bins)
+	ax.set(xlabel = 'mass', ylabel = 'count')
+	plt.show()
+
+def traj_plot(data_frame):
+	plt.figure()
+	tp.plot_traj(data_frame)
+	plt.show()
