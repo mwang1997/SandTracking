@@ -116,7 +116,7 @@ def to_grey(frame):
         blue = frame[:, :, 1]
         green = frame[:, :, 2]
 
-        return red * 0.2125 + 0.7154 * green + 0.0721 * blue
+        return red * 0.2125 + green * 0.7154 + 0.0721 * blue
 
 def evaluate_features(video_name, particle_size, particle_tolerance, start_frame, frame_length):
 	#frames is an numpy array of video frames
@@ -256,38 +256,43 @@ def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tole
 
 	return data_frame
 
-def export(data_frame, particles):
-	#data to turn into excel sheets
-	raw_data = data_frame.copy()
-	velocity_data = dict({"x_vel": [], "y_vel": [], "frame": [], "particle": []})
-	acceleration_data = dict({"x_accel": [], "y_accel": [], "frame": [], "particle": []})
-	jerk_data = dict({"x_jerk": [], "y_jerk": [], "frame": [], "particle": []})
+def export(data_frame, particles = None):
+	if particles == None:
+		raw_data = data_frame.copy()
+		raw_data.to_excel("output.xlsx", sheet_name = "raw_data")
 
-	for p in particles.values():
-		for i in range (0, len(p.vel)):
-			velocity_data["x_vel"].append(p.vel[i][0])
-			velocity_data["y_vel"].append(p.vel[i][1])
-			velocity_data["frame"].append(p.vel[i][2])
-			velocity_data["particle"].append(p.ID)
+	else:
+		#data to turn into excel sheets
+		raw_data = data_frame.copy()
+		velocity_data = dict({"x_vel": [], "y_vel": [], "frame": [], "particle": []})
+		acceleration_data = dict({"x_accel": [], "y_accel": [], "frame": [], "particle": []})
+		jerk_data = dict({"x_jerk": [], "y_jerk": [], "frame": [], "particle": []})
 
-			if i < len(p.accel):
-				acceleration_data["x_accel"].append(p.accel[i][0])
-				acceleration_data["y_accel"].append(p.accel[i][1])
-				acceleration_data["frame"].append(p.accel[i][2])
-				acceleration_data["particle"].append(p.ID)
+		for p in particles.values():
+			for i in range (0, len(p.vel)):
+				velocity_data["x_vel"].append(p.vel[i][0])
+				velocity_data["y_vel"].append(p.vel[i][1])
+				velocity_data["frame"].append(p.vel[i][2])
+				velocity_data["particle"].append(p.ID)
 
-			if i < len(p.jerk):
-				jerk_data["x_jerk"].append(p.jerk[i][0])
-				jerk_data["y_jerk"].append(p.jerk[i][1])
-				jerk_data["frame"].append(p.jerk[i][2])
-				jerk_data["particle"].append(p.ID)
+				if i < len(p.accel):
+					acceleration_data["x_accel"].append(p.accel[i][0])
+					acceleration_data["y_accel"].append(p.accel[i][1])
+					acceleration_data["frame"].append(p.accel[i][2])
+					acceleration_data["particle"].append(p.ID)
 
-	velocity_data = pd.DataFrame.from_dict(velocity_data)
-	acceleration_data = pd.DataFrame.from_dict(acceleration_data)
-	jerk_data = pd.DataFrame.from_dict(jerk_data)
+				if i < len(p.jerk):
+					jerk_data["x_jerk"].append(p.jerk[i][0])
+					jerk_data["y_jerk"].append(p.jerk[i][1])
+					jerk_data["frame"].append(p.jerk[i][2])
+					jerk_data["particle"].append(p.ID)
 
-	with pd.ExcelWriter("output.xlsx") as writer:
-		raw_data.to_excel(writer, sheet_name = "raw data")
-		velocity_data.to_excel(writer, sheet_name = "velocity data")
-		acceleration_data.to_excel(writer, sheet_name = "acceleration data")
-		jerk_data.to_excel(writer, sheet_name = "jerk data")
+		velocity_data = pd.DataFrame.from_dict(velocity_data)
+		acceleration_data = pd.DataFrame.from_dict(acceleration_data)
+		jerk_data = pd.DataFrame.from_dict(jerk_data)
+
+		with pd.ExcelWriter("output.xlsx") as writer:
+			raw_data.to_excel(writer, sheet_name = "raw data")
+			velocity_data.to_excel(writer, sheet_name = "velocity data")
+			acceleration_data.to_excel(writer, sheet_name = "acceleration data")
+			jerk_data.to_excel(writer, sheet_name = "jerk data")

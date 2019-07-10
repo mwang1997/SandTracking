@@ -4,4 +4,8 @@
 *.mp4
 *.DS_Store
 *.xlsx
+*.zip
+*.jpg
+*tiff
+run.py
 SandTrackingChris.py

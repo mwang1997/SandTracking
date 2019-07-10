@@ -31,17 +31,17 @@ print("Enter the number of frames to evaluate")
 frameLength = int(input())
 
 t = st.evaluate_features(videoName, particleSize, particleTolerance, startFrame, frameLength)
-t = st.evaluate_trajectories(t, 50, 10, 0.99, 3)
-t = st.fixed_filter_stubs(t, 10)
+#t = st.evaluate_trajectories(t, 50, 10, 0.99, 3)
+#t = st.fixed_filter_stubs(t, 10)
 
-particles = st.extract_particles(t)
+#particles = st.extract_particles(t)
 
-t = st.postfiltering(t, particles, 5000, math.inf, math.pi * 15 / 180, 10000, 10)
+#t = st.postfiltering(t, particles, 5000, math.inf, math.pi * 15 / 180, 10000, 10)
 
 print(t)
 
-st.export(t, particles)
+st.export(t)
 
-ax = tp.plot_traj(t)
-plt.show()
+#ax = tp.plot_traj(t)
+#plt.show()
 
