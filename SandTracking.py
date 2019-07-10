@@ -32,7 +32,6 @@ class particle:
 		"""The double averaged eccentricity of the particle in the frames it appears in."""
 		self.polyline = None
 		"""The Numpy Polyline representing a quadratic polynomial line of best fit for the particle's position."""
-
 		self.pos_derivative = ([], [], [], [])		
 		"""The tuple of the 0th, 1st, 2nd and 3rd derivatives of position, which is encoded as a list of tuples in the form
 		of (X, Y, Error, Frame)"""
@@ -199,7 +198,7 @@ def evaluate_trajectories(data_frame, search_size, lb_search_size, step, particl
 			t (DataFrame): The DataFrame of trajectory information generated from the DataFrame of features.
 	"""
 	pred = tp.predict.NearestVelocityPredict()				
-	t = pred.link_df(data_frame, search_size, adaptive_stop = lb_search_size, adaptive_step = step, memory = particle_memory)
+	t = pred.link_df(data_frame.copy(), search_size, adaptive_stop = lb_search_size, adaptive_step = step, memory = particle_memory)
 
 	return t
 
@@ -381,7 +380,7 @@ def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tole
 
 		if (abs(p.average[0][1]) < stillness and abs(p.average[0][1] < stillness)) or len(p.irregular) > tolerance:
 			particles.pop(p.ID)
-			
+
 			for i in p.index:
 				particle.used_index.remove(i)
 
