@@ -381,6 +381,7 @@ def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tole
 
 		if (abs(p.average[0][1]) < stillness and abs(p.average[0][1] < stillness)) or len(p.irregular) > tolerance:
 			particles.pop(p.ID)
+			
 			for i in p.index:
 				particle.used_index.remove(i)
 
@@ -402,7 +403,6 @@ def export(data_frame, particles = None):
 		raw_data.to_excel("output.xlsx", sheet_name = "raw_data")
 
 	else:
-		#data to turn into excel sheets
 		raw_data = data_frame.copy()
 		velocity_data = dict({"x_vel": [], "y_vel": [], "x_err": [], "y_err": [], "frame": [], "particle": []})
 		acceleration_data = dict({"x_accel": [], "y_accel": [], "x_err": [], "y_err": [], "frame": [], "particle": []})
