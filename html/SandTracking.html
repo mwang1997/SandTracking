@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>SandTracking API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>SandTracking</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">#PlotPy for Falling Sand
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import trackpy as tp
+
+import av
+import pims
+import math
+
+import pandas as pd
+from pandas import DataFrame, Series
+
+frames_per_second = 1000
+&#34;&#34;&#34;The frames per second of the camera being used&#34;&#34;&#34;
+
+class particle:
+        &#34;&#34;&#34;This is a class representing a single particle found by Trackpy&#34;&#34;&#34;
+
+        used_index = []
+        &#34;&#34;&#34;The integer list of DataFrame indices generated by Trackpy that pass filtering.&#34;&#34;&#34;
+
+        def __init__(self, ID):
+                self.index = []
+                &#34;&#34;&#34;The integer list of DataFrame indicies generated by Trackpy that the particle uses&#34;&#34;&#34;
+                self.ID = ID
+                &#34;&#34;&#34;The integer particle ID assigned by Trackpy when linking trajectories from features.&#34;&#34;&#34;
+                self.diameter = 0
+                &#34;&#34;&#34;The double averaged size of the particle in the frames it appears in, in pixels.&#34;&#34;&#34;
+                self.ecc = 0
+                &#34;&#34;&#34;The double averaged eccentricity of the particle in the frames it appears in.&#34;&#34;&#34;
+                self.polyline = None
+                &#34;&#34;&#34;The Numpy Polyline representing a quadratic polynomial line of best fit for the particle&#39;s position.&#34;&#34;&#34;
+
+                self.pos_derivative = ([], [], [], [])          
+                &#34;&#34;&#34;The tuple of the 0th, 1st, 2nd and 3rd derivatives of position, which is encoded as a list of tuples in the form
+                of (X, Y, Error, Frame)&#34;&#34;&#34;
+                self.irregular = []
+                &#34;&#34;&#34;The integer list of indicies where an irregular motion occurs.&#34;&#34;&#34;
+                self.average = []
+                &#34;&#34;&#34;he list of tuples representing a particle&#39;s average derivatives of position using the tuple (X, Y).&#34;&#34;&#34;
+
+        def add_index(self, coord, diameter, ecc, index):
+                &#34;&#34;&#34;
+                The method that adds the information in an index of TrackPy&#39;s trajectory DataFrame to it&#39;s associated particle.
+                        
+                Parameters:
+                        coord (single tuple of objects): The positional information of the particle using tuple (x (double), y (double), error (double), frame(double)).
+                        diameter (double): The diameter of the particle in pixels.
+                        ecc (double): The eccentricty of the particle.
+                        index (int): the index of the DataFrame being evaluated.
+                &#34;&#34;&#34;
+                self.diameter = (self.diameter * len(self.pos_derivative[0]) + diameter) / (len(self.pos_derivative[0]) + 1)
+                self.ecc = (self.ecc * len(self.pos_derivative[0]) + ecc) / (len(self.pos_derivative[0]) + 1)
+                self.index.append(index)
+                self.pos_derivative[0].append(coord)
+
+                if index not in self.used_index:
+                        self.used_index.append(index)
+
+        def calc_polyline(self):
+                &#34;&#34;&#34;
+                        The method that calculates a quadratic line of best fit for the particle&#39;s position coordinates.
+                &#34;&#34;&#34;
+                x = []
+                y = []
+
+                for i in range(0, len(self.pos_derivative[0])):
+                        x.append(self.pos_derivative[0][i][0])
+                        y.append(self.pos_derivative[0][i][1])
+
+                self.polyline = np.poly1d(np.polyfit(np.array(x), np.array(y), 2))
+
+        def calc_vel(self, angle):
+                &#34;&#34;&#34;
+                        The method that calculates the particle&#39;s velocity from its position.
+
+                        Parameters:
+                                angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+                &#34;&#34;&#34;
+                self.average.append((0, 0))
+
+                for i in range (0, len(self.pos_derivative[0]) - 1):
+                        dt = (self.pos_derivative[0][i + 1][3] - self.pos_derivative[0][i][3]) / frames_per_second
+                        t = (self.pos_derivative[0][i + 1][3] + self.pos_derivative[0][i][3]) / 2
+
+                        err = ((self.pos_derivative[0][i][2] * self.pos_derivative[0][i + 1][0] - self.pos_derivative[0][i + 1][2] * self.pos_derivative[0][i][0]) / dt, 
+                                (self.pos_derivative[0][i][2] * self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i + 1][2] * self.pos_derivative[0][i][1]) / dt)
+
+                        self.pos_derivative[1].append(((self.pos_derivative[0][i + 1][0] - self.pos_derivative[0][i][0]) / dt, 
+                                (self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i][1]) / dt, err, t))
+                        self.average[-1]  = (self.average[-1][0] + self.pos_derivative[1][-1][0], self.average[-1][1] + self.pos_derivative[1][-1][1])
+
+                        if len(self.pos_derivative[1]) &gt; 1 and get_cos(self.pos_derivative[1][-1], self.pos_derivative[1][-2]) &lt; math.cos(angle):
+                                self.irregular.append(self.index[i])
+
+                self.average[-1] = (self.average[-1][0] / len(self.pos_derivative[1]), self.average[-1][1] / len(self.pos_derivative[1]))
+
+        def calc_accel(self):
+                &#34;&#34;&#34;The method that calculates a particle&#39;s acceleration from its velocity.&#34;&#34;&#34;
+                self.average.append((0, 0))
+
+                for i in range (0, len(self.pos_derivative[1]) - 1):
+                        dt = (self.pos_derivative[1][i + 1][3] - self.pos_derivative[1][i][3]) / frames_per_second
+                        t = (self.pos_derivative[1][i + 1][3] + self.pos_derivative[1][i][3]) / 2
+
+                        err = ((self.pos_derivative[1][i][2][0] * self.pos_derivative[1][i + 1][0] - self.pos_derivative[1][i + 1][2][0] * self.pos_derivative[1][i][0]) / dt, 
+                                (self.pos_derivative[1][i][2][1] * self.pos_derivative[1][i + 1][1] - self.pos_derivative[1][i + 1][2][1] * self.pos_derivative[1][i][1]) / dt)
+
+                        self.pos_derivative[2].append(((self.pos_derivative[1][i + 1][0] - self.pos_derivative[1][i][0]) / dt, 
+                                (self.pos_derivative[1][i + 1][1] - self.pos_derivative[1][i][1]) / dt, err, t))
+                        self.average[-1]  = ((self.average[-1][0] * len(self.pos_derivative[2]) + self.pos_derivative[2][-1][0]) / (len(self.pos_derivative[2]) + 1), 
+                                                                (self.average[-1][1] * len(self.pos_derivative[2]) + self.pos_derivative[2][-1][1]) / (len(self.pos_derivative[2]) + 1))
+
+        def calc_jerk(self):
+                &#34;&#34;&#34;The method that calculates a particle&#39;s jerk from its acceration.&#34;&#34;&#34;
+                self.average.append((0, 0))
+
+                for i in range (0, len(self.pos_derivative[2]) - 1):
+                        dt = (self.pos_derivative[2][i + 1][3] - self.pos_derivative[2][i][3]) / frames_per_second
+                        t = (self.pos_derivative[2][i + 1][3] + self.pos_derivative[2][i][3]) / 2
+
+                        err = ((self.pos_derivative[2][i][2][0] * self.pos_derivative[2][i + 1][0] - self.pos_derivative[2][i + 1][2][0] * self.pos_derivative[2][i][0]) / dt, 
+                                (self.pos_derivative[2][i][2][1] * self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i + 1][2][1] * self.pos_derivative[2][i][1]) / dt)
+
+                        self.pos_derivative[3].append(((self.pos_derivative[2][i + 1][0] - self.pos_derivative[2][i][0]) / dt, 
+                                (self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i][1]) / dt, err, t))
+                        self.average[-1]  = (self.average[-1][0] + self.pos_derivative[3][-1][0], self.average[-1][1] + self.pos_derivative[3][-1][1])
+
+        def analyze(self, angle):
+                &#34;&#34;&#34;
+                        The method that calculates all derivatives of position and the polyline of a particle.
+
+                        Parameter:
+                                angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+                &#34;&#34;&#34;
+                self.calc_polyline()
+                self.calc_vel(angle)
+                self.calc_accel()
+                self.calc_jerk()
+
+def get_cos(v1, v2):
+        #Helper function to get the angle of two vectors.
+
+        numerator = v1[0] * v2[0] + v1[1] * v2[1]
+        denominator = math.sqrt(math.pow(v1[0], 2) + math.pow(v1[1], 2)) * math.sqrt(math.pow(v2[0], 2) + math.pow(v2[1], 2))
+
+        return numerator / denominator
+
+@pims.pipeline
+def to_grey(frame):
+        &#34;&#34;&#34;
+                The function that converts a NumpyArray to greyscale.
+
+                Parameters:
+                        frame (NumpyArray): The NumpyArray representing a video frame.
+
+                Returns:
+                        frame (NumpyArray): The NumpyArray taken in and converted to greyscale.
+        &#34;&#34;&#34;
+        red = frame[:, :, 0]
+        blue = frame[:, :, 1]
+        green = frame[:, :, 2]
+
+        return red * 0.2125 + green * 0.7154 + blue * 0.0721
+
+def evaluate_features(video_name, particle_size, particle_minmass, start_frame, length, noise):
+        &#34;&#34;&#34;
+                The function that converts a video to a greyscale NumpyArray and then runs Trackpy&#39;s feature detection algorithm on the arrays.
+
+                Parameters:
+                        video_name (String): The name of the video to be evaluated stored in the Recordings folder.
+                        particle_size (int): The odd-number size of the feature to be detected by Trackpy.
+                        particle_minmass (double): The minimum feature brightness to filter using Trackpy&#39;s filtering functions.
+                        start_frame (int): The frame in the video from which to begin evaluation.
+                        length (int): The number of frames to evaluate.
+
+                Returns:
+                        frame (DataFrame): The DataFrame of the features found in the video.
+        &#34;&#34;&#34;
+        frames = to_grey(pims.PyAVReaderTimed(video_name))
+        f = tp.batch(frames[start_frame: start_frame + length], particle_size, minmass = particle_minmass, noise_size = noise)
+
+        return f
+
+def evaluate_trajectories(data_frame, search_size, lb_search_size, step, particle_memory):
+        &#34;&#34;&#34;
+                The function that links features previously discovered by Trackpy and creates a trajectory.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of feature inforation generated by Trackpy.
+                        search_size (int): The radius of pixels the trajectory searching program will look for the particle.
+                        lb_search_size (int): The lower bound of the search size.
+                        step (double): The rate at which the search size decreases to the lb_search_size.
+                        particle_memory (int): The number of frames that a particle cannot be found before it is pruned from memory.
+
+                Returns:
+                        t (DataFrame): The DataFrame of trajectory information generated from the DataFrame of features.
+        &#34;&#34;&#34;
+        pred = tp.predict.NearestVelocityPredict()                              
+        t = pred.link_df(data_frame, search_size, adaptive_stop = lb_search_size, adaptive_step = step, memory = particle_memory)
+
+        return t
+
+def extract_particles(data_frame):
+        &#34;&#34;&#34;
+                The function that generates particles with all relavent information from a DataFrame of trajectory.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+
+                Returns:
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the input DataFrame with the format {keys = ID: values: particle}.
+        &#34;&#34;&#34;
+        particles = dict()
+
+        for i in range (0, data_frame.shape[0]):
+                ID = data_frame.at[i, &#34;particle&#34;]
+
+                if ID not in particles:
+                        particles[ID] = particle(ID)
+
+                particles[ID].add_index((data_frame.at[i, &#34;x&#34;], data_frame.at[i, &#34;y&#34;], data_frame.at[i, &#34;ep&#34;] / 2, data_frame.at[i, &#34;frame&#34;]), 
+                        data_frame.at[i, &#34;size&#34;] * 2, data_frame.at[i, &#34;ecc&#34;], i)
+
+        return particles
+
+def split(data_frame, p, filter_stub, angle):
+                &#34;&#34;&#34;
+                        The function that splits a single trajectory into recoverable trajectories if there is an irregular motion in the original trajectory.
+
+                        Parameters:
+                                data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                                p (particle): The particle that displayed irregular motion.
+                                filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+                                angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+
+                        Returns:
+                                return_particles (list of particles): The list of particles generated from the input irregular particle.
+                &#34;&#34;&#34;
+                return_particles = []
+
+                for x in range(0, len(p.irregular) + 1):
+                        return_particles.append(particle(data_frame.max()[9] + 1 + x))
+
+                return_index = 0
+
+                for x in p.index:
+                        if x in p.irregular:
+                                return_index += 1
+
+                        return_particles[return_index].add_index((data_frame.at[x, &#34;x&#34;], data_frame.at[x, &#34;y&#34;], data_frame.at[x, &#34;ep&#34;] / 2, data_frame.at[x, &#34;frame&#34;]), 
+                                                                                                        data_frame.at[x, &#34;size&#34;] * 2, data_frame.at[x, &#34;ecc&#34;], x)
+
+                for rp in return_particles.copy():
+                        if len(rp.pos_derivative[0]) &lt; filter_stub:
+                                for x in range(0, len(return_particles)):
+                                        if return_particles[x].ID == rp.ID:
+                                                return_particles.pop(x)
+                                                break;
+
+                                for x in rp.index:
+                                        particle.used_index.remove(x)
+
+                for rp in return_particles:
+                        rp.analyze(angle)
+
+                        for x in rp.index:
+                                data_frame.at[x, &#34;particle&#34;] = rp.ID
+
+                data_frame = data_frame.loc[particle.used_index]
+
+                return return_particles
+
+def merge(data_frame, particles, error_tolerance, angle):
+        &#34;&#34;&#34;
+                The function that takes a list of previously split particles and merges them if they&#39;re very similar in trajectory.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (list of particles): The list of particle generated from an irregular particle.
+                        error_tolerance (double): The maximum sum of residuals between a particle&#39;s polyline and another particle&#39;s position coordinates allowing merging.
+                        angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+
+                Returns:
+                        particles (list of particles): The list of particles after remerging previously split particles.
+        &#34;&#34;&#34;
+        evaluated_particles = []
+
+        for p1 in particles.copy():
+                evaluated_particles.append(p1.ID)
+                poly = p1.polyline
+                lse = 0
+
+                for p2 in particles.copy():
+                        if p2.ID not in evaluated_particles:
+                                for i in range(0, len(p2.pos_derivative[0])):
+                                        lse += math.pow(poly(p2.pos_derivative[0][i][0]) - p2.pos_derivative[0][i][1], 2)
+
+                                lse = math.sqrt(lse / len(p2.pos_derivative[0]))
+
+                                if lse &lt; error_tolerance:
+                                        evaluated_particles.append(p2.ID)
+
+                                        for i in range(0, len(particles)):
+                                                if particles[i].ID == p1.ID:
+                                                        for x in p2.index:
+                                                                data_frame.at[x, &#34;particle&#34;] = particles[i].ID
+                                                                particles[i].add_index((data_frame.at[x, &#34;x&#34;], data_frame.at[x, &#34;y&#34;], data_frame.at[x, &#34;ep&#34;], data_frame.at[x, &#34;frame&#34;]), 
+                                                                                                        data_frame.at[x, &#34;size&#34;] * 2, data_frame.at[x, &#34;ecc&#34;], x)
+
+                                                        particles[i].analyze(angle)
+
+                                                if particles[i].ID == p2.ID:
+                                                        particles.pop(i)
+
+        return particles
+
+def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle):
+        &#34;&#34;&#34;
+                The function that fixes irregular trajectories detected by Trackpy.
+                
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the trajectory DataFrame with the format {keys = ID: values: particle}.
+                        filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+                        error_tolerance (double): The maximum sum of residuals between a particle&#39;s polyline and another particle&#39;s position coordinates allowing merging.
+                        angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+
+                Returns:
+                        data_frame (DataFrame): The DataFrame of trajectory information with all unrecoverable particle trajectories removed.
+        &#34;&#34;&#34;
+        for p in particles.copy().values():
+                if not len(p.irregular) == 0:
+                        new_particles = merge(data_frame, split(data_frame, p, filter_stub, angle), error_tolerance, angle)
+                        particles.pop(p.ID)
+
+                        for split_particles in new_particles:
+                                particles[split_particles.ID] = split_particles
+
+        return data_frame.loc[particle.used_index]
+
+def fixed_filter_stubs(data_frame, i):
+        &#34;&#34;&#34;
+                The function that fixes Trackpy&#39;s filter_stubs function by restoring the indices of the data_frame.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        i (int): The minimum amount of frames the recoverable trajectories must persist for.
+
+                Returns:
+                        t (Data_Frame): The DataFrame of the trajectory information of particles that exist in more frames than i.
+        &#34;&#34;&#34;
+        t = tp.filter_stubs(data_frame, i)
+        t.index = range(0, len(t))
+
+        return t
+
+def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tolerance, filter_stub):
+        &#34;&#34;&#34;
+                The function that filters out particles based on its velocity, degree of irregularity, and how many frames it&#39;s in.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the trajectory DataFrame with the format {keys = ID: values: particle}.
+                        stillness (double): The minimum speed of a particle in pixels before it is considered a still object being misdetected by Trackpy.
+                        tolerance (int): The maximum amount of irregularities a particle can have before it is considered too irregular to evaluate.
+                        error_tolerance (double): The maximum sum of residuals between a particle&#39;s polyline and another particle&#39;s position coordinates allowing merging.
+                        filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+
+                Returns:
+                        data_frame (DataFrame): The DataFrame of trajectory information filtered by the function.
+
+        &#34;&#34;&#34;
+        if tolerance == None:
+                tolerance = math.inf
+
+        for p in particles.copy().values():
+                p.analyze(angle)
+
+                if (abs(p.average[0][1]) &lt; stillness and abs(p.average[0][1] &lt; stillness)) or len(p.irregular) &gt; tolerance:
+                        particles.pop(p.ID)
+                        for i in p.index:
+                                particle.used_index.remove(i)
+
+        unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle)
+        data_frame = data_frame.loc[particle.used_index]
+
+        return data_frame
+
+def export(data_frame, particles = None):
+        &#34;&#34;&#34;
+                The function that exports all information to an excel sheet in the directory folder named &#34;output.xlsx&#34;
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the input DataFrame with the format {keys = ID: values: particle}.
+        &#34;&#34;&#34;
+        if particles == None:
+                raw_data = data_frame.copy()
+                raw_data.to_excel(&#34;output.xlsx&#34;, sheet_name = &#34;raw_data&#34;)
+
+        else:
+                #data to turn into excel sheets
+                raw_data = data_frame.copy()
+                velocity_data = dict({&#34;x_vel&#34;: [], &#34;y_vel&#34;: [], &#34;x_err&#34;: [], &#34;y_err&#34;: [], &#34;frame&#34;: [], &#34;particle&#34;: []})
+                acceleration_data = dict({&#34;x_accel&#34;: [], &#34;y_accel&#34;: [], &#34;x_err&#34;: [], &#34;y_err&#34;: [], &#34;frame&#34;: [], &#34;particle&#34;: []})
+                jerk_data = dict({&#34;x_jerk&#34;: [], &#34;y_jerk&#34;: [], &#34;x_err&#34;: [], &#34;y_err&#34;: [], &#34;frame&#34;: [], &#34;particle&#34;: []})
+
+                for p in particles.values():
+                        for i in range (0, len(p.pos_derivative[1])):
+                                velocity_data[&#34;x_vel&#34;].append(p.pos_derivative[1][i][0])
+                                velocity_data[&#34;y_vel&#34;].append(p.pos_derivative[1][i][1])
+                                velocity_data[&#34;x_err&#34;].append(p.pos_derivative[1][i][2][0])
+                                velocity_data[&#34;y_err&#34;].append(p.pos_derivative[1][i][2][1])
+                                velocity_data[&#34;frame&#34;].append(p.pos_derivative[1][i][3])
+                                velocity_data[&#34;particle&#34;].append(p.ID)
+
+                                if i &lt; len(p.pos_derivative[2]):
+                                        acceleration_data[&#34;x_accel&#34;].append(p.pos_derivative[2][i][0])
+                                        acceleration_data[&#34;y_accel&#34;].append(p.pos_derivative[2][i][1])
+                                        acceleration_data[&#34;x_err&#34;].append(p.pos_derivative[2][i][2][0])
+                                        acceleration_data[&#34;y_err&#34;].append(p.pos_derivative[2][i][2][1])
+                                        acceleration_data[&#34;frame&#34;].append(p.pos_derivative[2][i][3])
+                                        acceleration_data[&#34;particle&#34;].append(p.ID)
+
+                                if i &lt; len(p.pos_derivative[3]):
+                                        jerk_data[&#34;x_jerk&#34;].append(p.pos_derivative[3][i][0])
+                                        jerk_data[&#34;y_jerk&#34;].append(p.pos_derivative[3][i][1])
+                                        jerk_data[&#34;x_err&#34;].append(p.pos_derivative[3][i][2][0])
+                                        jerk_data[&#34;y_err&#34;].append(p.pos_derivative[3][i][2][1])
+                                        jerk_data[&#34;frame&#34;].append(p.pos_derivative[3][i][3])
+                                        jerk_data[&#34;particle&#34;].append(p.ID)
+
+                velocity_data = pd.DataFrame.from_dict(velocity_data)
+                acceleration_data = pd.DataFrame.from_dict(acceleration_data)
+                jerk_data = pd.DataFrame.from_dict(jerk_data)
+
+                with pd.ExcelWriter(&#34;output.xlsx&#34;) as writer:
+                        raw_data.to_excel(writer, sheet_name = &#34;raw data&#34;)
+                        velocity_data.to_excel(writer, sheet_name = &#34;velocity data&#34;)
+                        acceleration_data.to_excel(writer, sheet_name = &#34;acceleration data&#34;)
+                        jerk_data.to_excel(writer, sheet_name = &#34;jerk data&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="SandTracking.frames_per_second"><code class="name">var <span class="ident">frames_per_second</span></code></dt>
+<dd>
+<section class="desc"><p>The frames per second of the camera being used</p></section>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="SandTracking.evaluate_features"><code class="name flex">
+<span>def <span class="ident">evaluate_features</span></span>(<span>video_name, particle_size, particle_minmass, start_frame, length, noise)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that converts a video to a greyscale NumpyArray and then runs Trackpy's feature detection algorithm on the arrays.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>video_name</code></strong> :&ensp;<code>String</code></dt>
+<dd>The name of the video to be evaluated stored in the Recordings folder.</dd>
+<dt><strong><code>particle_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>The odd-number size of the feature to be detected by Trackpy.</dd>
+<dt><strong><code>particle_minmass</code></strong> :&ensp;<code>double</code></dt>
+<dd>The minimum feature brightness to filter using Trackpy's filtering functions.</dd>
+<dt><strong><code>start_frame</code></strong> :&ensp;<code>int</code></dt>
+<dd>The frame in the video from which to begin evaluation.</dd>
+<dt><strong><code>length</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of frames to evaluate.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of the features found in the video.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def evaluate_features(video_name, particle_size, particle_minmass, start_frame, length, noise):
+        &#34;&#34;&#34;
+                The function that converts a video to a greyscale NumpyArray and then runs Trackpy&#39;s feature detection algorithm on the arrays.
+
+                Parameters:
+                        video_name (String): The name of the video to be evaluated stored in the Recordings folder.
+                        particle_size (int): The odd-number size of the feature to be detected by Trackpy.
+                        particle_minmass (double): The minimum feature brightness to filter using Trackpy&#39;s filtering functions.
+                        start_frame (int): The frame in the video from which to begin evaluation.
+                        length (int): The number of frames to evaluate.
+
+                Returns:
+                        frame (DataFrame): The DataFrame of the features found in the video.
+        &#34;&#34;&#34;
+        frames = to_grey(pims.PyAVReaderTimed(video_name))
+        f = tp.batch(frames[start_frame: start_frame + length], particle_size, minmass = particle_minmass, noise_size = noise)
+
+        return f</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.evaluate_trajectories"><code class="name flex">
+<span>def <span class="ident">evaluate_trajectories</span></span>(<span>data_frame, search_size, lb_search_size, step, particle_memory)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that links features previously discovered by Trackpy and creates a trajectory.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of feature inforation generated by Trackpy.</dd>
+<dt><strong><code>search_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>The radius of pixels the trajectory searching program will look for the particle.</dd>
+<dt><strong><code>lb_search_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>The lower bound of the search size.</dd>
+<dt><strong><code>step</code></strong> :&ensp;<code>double</code></dt>
+<dd>The rate at which the search size decreases to the lb_search_size.</dd>
+<dt><strong><code>particle_memory</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of frames that a particle cannot be found before it is pruned from memory.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>t</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated from the DataFrame of features.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def evaluate_trajectories(data_frame, search_size, lb_search_size, step, particle_memory):
+        &#34;&#34;&#34;
+                The function that links features previously discovered by Trackpy and creates a trajectory.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of feature inforation generated by Trackpy.
+                        search_size (int): The radius of pixels the trajectory searching program will look for the particle.
+                        lb_search_size (int): The lower bound of the search size.
+                        step (double): The rate at which the search size decreases to the lb_search_size.
+                        particle_memory (int): The number of frames that a particle cannot be found before it is pruned from memory.
+
+                Returns:
+                        t (DataFrame): The DataFrame of trajectory information generated from the DataFrame of features.
+        &#34;&#34;&#34;
+        pred = tp.predict.NearestVelocityPredict()                              
+        t = pred.link_df(data_frame, search_size, adaptive_stop = lb_search_size, adaptive_step = step, memory = particle_memory)
+
+        return t</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.export"><code class="name flex">
+<span>def <span class="ident">export</span></span>(<span>data_frame, particles=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that exports all information to an excel sheet in the directory folder named "output.xlsx"</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+<dt><strong><code>particles</code></strong> :&ensp;<code>Dictionary</code> of <code>particles</code></dt>
+<dd>The Dictionary containing all the particles extracted from the input DataFrame with the format {keys = ID: values: particle}.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def export(data_frame, particles = None):
+        &#34;&#34;&#34;
+                The function that exports all information to an excel sheet in the directory folder named &#34;output.xlsx&#34;
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the input DataFrame with the format {keys = ID: values: particle}.
+        &#34;&#34;&#34;
+        if particles == None:
+                raw_data = data_frame.copy()
+                raw_data.to_excel(&#34;output.xlsx&#34;, sheet_name = &#34;raw_data&#34;)
+
+        else:
+                #data to turn into excel sheets
+                raw_data = data_frame.copy()
+                velocity_data = dict({&#34;x_vel&#34;: [], &#34;y_vel&#34;: [], &#34;x_err&#34;: [], &#34;y_err&#34;: [], &#34;frame&#34;: [], &#34;particle&#34;: []})
+                acceleration_data = dict({&#34;x_accel&#34;: [], &#34;y_accel&#34;: [], &#34;x_err&#34;: [], &#34;y_err&#34;: [], &#34;frame&#34;: [], &#34;particle&#34;: []})
+                jerk_data = dict({&#34;x_jerk&#34;: [], &#34;y_jerk&#34;: [], &#34;x_err&#34;: [], &#34;y_err&#34;: [], &#34;frame&#34;: [], &#34;particle&#34;: []})
+
+                for p in particles.values():
+                        for i in range (0, len(p.pos_derivative[1])):
+                                velocity_data[&#34;x_vel&#34;].append(p.pos_derivative[1][i][0])
+                                velocity_data[&#34;y_vel&#34;].append(p.pos_derivative[1][i][1])
+                                velocity_data[&#34;x_err&#34;].append(p.pos_derivative[1][i][2][0])
+                                velocity_data[&#34;y_err&#34;].append(p.pos_derivative[1][i][2][1])
+                                velocity_data[&#34;frame&#34;].append(p.pos_derivative[1][i][3])
+                                velocity_data[&#34;particle&#34;].append(p.ID)
+
+                                if i &lt; len(p.pos_derivative[2]):
+                                        acceleration_data[&#34;x_accel&#34;].append(p.pos_derivative[2][i][0])
+                                        acceleration_data[&#34;y_accel&#34;].append(p.pos_derivative[2][i][1])
+                                        acceleration_data[&#34;x_err&#34;].append(p.pos_derivative[2][i][2][0])
+                                        acceleration_data[&#34;y_err&#34;].append(p.pos_derivative[2][i][2][1])
+                                        acceleration_data[&#34;frame&#34;].append(p.pos_derivative[2][i][3])
+                                        acceleration_data[&#34;particle&#34;].append(p.ID)
+
+                                if i &lt; len(p.pos_derivative[3]):
+                                        jerk_data[&#34;x_jerk&#34;].append(p.pos_derivative[3][i][0])
+                                        jerk_data[&#34;y_jerk&#34;].append(p.pos_derivative[3][i][1])
+                                        jerk_data[&#34;x_err&#34;].append(p.pos_derivative[3][i][2][0])
+                                        jerk_data[&#34;y_err&#34;].append(p.pos_derivative[3][i][2][1])
+                                        jerk_data[&#34;frame&#34;].append(p.pos_derivative[3][i][3])
+                                        jerk_data[&#34;particle&#34;].append(p.ID)
+
+                velocity_data = pd.DataFrame.from_dict(velocity_data)
+                acceleration_data = pd.DataFrame.from_dict(acceleration_data)
+                jerk_data = pd.DataFrame.from_dict(jerk_data)
+
+                with pd.ExcelWriter(&#34;output.xlsx&#34;) as writer:
+                        raw_data.to_excel(writer, sheet_name = &#34;raw data&#34;)
+                        velocity_data.to_excel(writer, sheet_name = &#34;velocity data&#34;)
+                        acceleration_data.to_excel(writer, sheet_name = &#34;acceleration data&#34;)
+                        jerk_data.to_excel(writer, sheet_name = &#34;jerk data&#34;)</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.extract_particles"><code class="name flex">
+<span>def <span class="ident">extract_particles</span></span>(<span>data_frame)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that generates particles with all relavent information from a DataFrame of trajectory.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>particles</code></strong> :&ensp;<code>Dictionary</code> of <code>particles</code></dt>
+<dd>The Dictionary containing all the particles extracted from the input DataFrame with the format {keys = ID: values: particle}.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def extract_particles(data_frame):
+        &#34;&#34;&#34;
+                The function that generates particles with all relavent information from a DataFrame of trajectory.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+
+                Returns:
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the input DataFrame with the format {keys = ID: values: particle}.
+        &#34;&#34;&#34;
+        particles = dict()
+
+        for i in range (0, data_frame.shape[0]):
+                ID = data_frame.at[i, &#34;particle&#34;]
+
+                if ID not in particles:
+                        particles[ID] = particle(ID)
+
+                particles[ID].add_index((data_frame.at[i, &#34;x&#34;], data_frame.at[i, &#34;y&#34;], data_frame.at[i, &#34;ep&#34;] / 2, data_frame.at[i, &#34;frame&#34;]), 
+                        data_frame.at[i, &#34;size&#34;] * 2, data_frame.at[i, &#34;ecc&#34;], i)
+
+        return particles</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.fixed_filter_stubs"><code class="name flex">
+<span>def <span class="ident">fixed_filter_stubs</span></span>(<span>data_frame, i)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that fixes Trackpy's filter_stubs function by restoring the indices of the data_frame.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>The minimum amount of frames the recoverable trajectories must persist for.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>t</code></strong> :&ensp;<code>Data_Frame</code></dt>
+<dd>The DataFrame of the trajectory information of particles that exist in more frames than i.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def fixed_filter_stubs(data_frame, i):
+        &#34;&#34;&#34;
+                The function that fixes Trackpy&#39;s filter_stubs function by restoring the indices of the data_frame.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        i (int): The minimum amount of frames the recoverable trajectories must persist for.
+
+                Returns:
+                        t (Data_Frame): The DataFrame of the trajectory information of particles that exist in more frames than i.
+        &#34;&#34;&#34;
+        t = tp.filter_stubs(data_frame, i)
+        t.index = range(0, len(t))
+
+        return t</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.get_cos"><code class="name flex">
+<span>def <span class="ident">get_cos</span></span>(<span>v1, v2)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_cos(v1, v2):
+        #Helper function to get the angle of two vectors.
+
+        numerator = v1[0] * v2[0] + v1[1] * v2[1]
+        denominator = math.sqrt(math.pow(v1[0], 2) + math.pow(v1[1], 2)) * math.sqrt(math.pow(v2[0], 2) + math.pow(v2[1], 2))
+
+        return numerator / denominator</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.merge"><code class="name flex">
+<span>def <span class="ident">merge</span></span>(<span>data_frame, particles, error_tolerance, angle)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that takes a list of previously split particles and merges them if they're very similar in trajectory.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+<dt><strong><code>particles</code></strong> :&ensp;<code>list</code> of <code>particles</code></dt>
+<dd>The list of particle generated from an irregular particle.</dd>
+<dt><strong><code>error_tolerance</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum sum of residuals between a particle's polyline and another particle's position coordinates allowing merging.</dd>
+<dt><strong><code>angle</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum angle in radians a particle can move between positions before it's considered an irregular motion.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>particles</code></strong> :&ensp;<code>list</code> of <code>particles</code></dt>
+<dd>The list of particles after remerging previously split particles.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def merge(data_frame, particles, error_tolerance, angle):
+        &#34;&#34;&#34;
+                The function that takes a list of previously split particles and merges them if they&#39;re very similar in trajectory.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (list of particles): The list of particle generated from an irregular particle.
+                        error_tolerance (double): The maximum sum of residuals between a particle&#39;s polyline and another particle&#39;s position coordinates allowing merging.
+                        angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+
+                Returns:
+                        particles (list of particles): The list of particles after remerging previously split particles.
+        &#34;&#34;&#34;
+        evaluated_particles = []
+
+        for p1 in particles.copy():
+                evaluated_particles.append(p1.ID)
+                poly = p1.polyline
+                lse = 0
+
+                for p2 in particles.copy():
+                        if p2.ID not in evaluated_particles:
+                                for i in range(0, len(p2.pos_derivative[0])):
+                                        lse += math.pow(poly(p2.pos_derivative[0][i][0]) - p2.pos_derivative[0][i][1], 2)
+
+                                lse = math.sqrt(lse / len(p2.pos_derivative[0]))
+
+                                if lse &lt; error_tolerance:
+                                        evaluated_particles.append(p2.ID)
+
+                                        for i in range(0, len(particles)):
+                                                if particles[i].ID == p1.ID:
+                                                        for x in p2.index:
+                                                                data_frame.at[x, &#34;particle&#34;] = particles[i].ID
+                                                                particles[i].add_index((data_frame.at[x, &#34;x&#34;], data_frame.at[x, &#34;y&#34;], data_frame.at[x, &#34;ep&#34;], data_frame.at[x, &#34;frame&#34;]), 
+                                                                                                        data_frame.at[x, &#34;size&#34;] * 2, data_frame.at[x, &#34;ecc&#34;], x)
+
+                                                        particles[i].analyze(angle)
+
+                                                if particles[i].ID == p2.ID:
+                                                        particles.pop(i)
+
+        return particles</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.postfiltering"><code class="name flex">
+<span>def <span class="ident">postfiltering</span></span>(<span>data_frame, particles, stillness, tolerance, angle, error_tolerance, filter_stub)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that filters out particles based on its velocity, degree of irregularity, and how many frames it's in.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+<dt><strong><code>particles</code></strong> :&ensp;<code>Dictionary</code> of <code>particles</code></dt>
+<dd>The Dictionary containing all the particles extracted from the trajectory DataFrame with the format {keys = ID: values: particle}.</dd>
+<dt><strong><code>stillness</code></strong> :&ensp;<code>double</code></dt>
+<dd>The minimum speed of a particle in pixels before it is considered a still object being misdetected by Trackpy.</dd>
+<dt><strong><code>tolerance</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum amount of irregularities a particle can have before it is considered too irregular to evaluate.</dd>
+<dt><strong><code>error_tolerance</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum sum of residuals between a particle's polyline and another particle's position coordinates allowing merging.</dd>
+<dt><strong><code>filter_stub</code></strong> :&ensp;<code>int</code></dt>
+<dd>The minimum amount of frames the recoverable trajectories must persist for.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information filtered by the function.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tolerance, filter_stub):
+        &#34;&#34;&#34;
+                The function that filters out particles based on its velocity, degree of irregularity, and how many frames it&#39;s in.
+
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the trajectory DataFrame with the format {keys = ID: values: particle}.
+                        stillness (double): The minimum speed of a particle in pixels before it is considered a still object being misdetected by Trackpy.
+                        tolerance (int): The maximum amount of irregularities a particle can have before it is considered too irregular to evaluate.
+                        error_tolerance (double): The maximum sum of residuals between a particle&#39;s polyline and another particle&#39;s position coordinates allowing merging.
+                        filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+
+                Returns:
+                        data_frame (DataFrame): The DataFrame of trajectory information filtered by the function.
+
+        &#34;&#34;&#34;
+        if tolerance == None:
+                tolerance = math.inf
+
+        for p in particles.copy().values():
+                p.analyze(angle)
+
+                if (abs(p.average[0][1]) &lt; stillness and abs(p.average[0][1] &lt; stillness)) or len(p.irregular) &gt; tolerance:
+                        particles.pop(p.ID)
+                        for i in p.index:
+                                particle.used_index.remove(i)
+
+        unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle)
+        data_frame = data_frame.loc[particle.used_index]
+
+        return data_frame</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.split"><code class="name flex">
+<span>def <span class="ident">split</span></span>(<span>data_frame, p, filter_stub, angle)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that splits a single trajectory into recoverable trajectories if there is an irregular motion in the original trajectory.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+<dt><strong><code>p</code></strong> :&ensp;<a title="SandTracking.particle" href="#SandTracking.particle"><code>particle</code></a></dt>
+<dd>The particle that displayed irregular motion.</dd>
+<dt><strong><code>filter_stub</code></strong> :&ensp;<code>int</code></dt>
+<dd>The minimum amount of frames the recoverable trajectories must persist for.</dd>
+<dt><strong><code>angle</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum angle in radians a particle can move between positions before it's considered an irregular motion.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>return_particles</code></strong> :&ensp;<code>list</code> of <code>particles</code></dt>
+<dd>The list of particles generated from the input irregular particle.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def split(data_frame, p, filter_stub, angle):
+                &#34;&#34;&#34;
+                        The function that splits a single trajectory into recoverable trajectories if there is an irregular motion in the original trajectory.
+
+                        Parameters:
+                                data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                                p (particle): The particle that displayed irregular motion.
+                                filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+                                angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+
+                        Returns:
+                                return_particles (list of particles): The list of particles generated from the input irregular particle.
+                &#34;&#34;&#34;
+                return_particles = []
+
+                for x in range(0, len(p.irregular) + 1):
+                        return_particles.append(particle(data_frame.max()[9] + 1 + x))
+
+                return_index = 0
+
+                for x in p.index:
+                        if x in p.irregular:
+                                return_index += 1
+
+                        return_particles[return_index].add_index((data_frame.at[x, &#34;x&#34;], data_frame.at[x, &#34;y&#34;], data_frame.at[x, &#34;ep&#34;] / 2, data_frame.at[x, &#34;frame&#34;]), 
+                                                                                                        data_frame.at[x, &#34;size&#34;] * 2, data_frame.at[x, &#34;ecc&#34;], x)
+
+                for rp in return_particles.copy():
+                        if len(rp.pos_derivative[0]) &lt; filter_stub:
+                                for x in range(0, len(return_particles)):
+                                        if return_particles[x].ID == rp.ID:
+                                                return_particles.pop(x)
+                                                break;
+
+                                for x in rp.index:
+                                        particle.used_index.remove(x)
+
+                for rp in return_particles:
+                        rp.analyze(angle)
+
+                        for x in rp.index:
+                                data_frame.at[x, &#34;particle&#34;] = rp.ID
+
+                data_frame = data_frame.loc[particle.used_index]
+
+                return return_particles</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.to_grey"><code class="name flex">
+<span>def <span class="ident">to_grey</span></span>(<span>frame)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that converts a NumpyArray to greyscale.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>frame</code></strong> :&ensp;<code>NumpyArray</code></dt>
+<dd>The NumpyArray representing a video frame.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>frame</code></strong> :&ensp;<code>NumpyArray</code></dt>
+<dd>The NumpyArray taken in and converted to greyscale.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pims.pipeline
+def to_grey(frame):
+        &#34;&#34;&#34;
+                The function that converts a NumpyArray to greyscale.
+
+                Parameters:
+                        frame (NumpyArray): The NumpyArray representing a video frame.
+
+                Returns:
+                        frame (NumpyArray): The NumpyArray taken in and converted to greyscale.
+        &#34;&#34;&#34;
+        red = frame[:, :, 0]
+        blue = frame[:, :, 1]
+        green = frame[:, :, 2]
+
+        return red * 0.2125 + green * 0.7154 + blue * 0.0721</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.unfilter_jumps"><code class="name flex">
+<span>def <span class="ident">unfilter_jumps</span></span>(<span>data_frame, particles, filter_stub, error_tolerance, angle)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The function that fixes irregular trajectories detected by Trackpy.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information generated by Trackpy.</dd>
+<dt><strong><code>particles</code></strong> :&ensp;<code>Dictionary</code> of <code>particles</code></dt>
+<dd>The Dictionary containing all the particles extracted from the trajectory DataFrame with the format {keys = ID: values: particle}.</dd>
+<dt><strong><code>filter_stub</code></strong> :&ensp;<code>int</code></dt>
+<dd>The minimum amount of frames the recoverable trajectories must persist for.</dd>
+<dt><strong><code>error_tolerance</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum sum of residuals between a particle's polyline and another particle's position coordinates allowing merging.</dd>
+<dt><strong><code>angle</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum angle in radians a particle can move between positions before it's considered an irregular motion.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>data_frame</code></strong> :&ensp;<code>DataFrame</code></dt>
+<dd>The DataFrame of trajectory information with all unrecoverable particle trajectories removed.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle):
+        &#34;&#34;&#34;
+                The function that fixes irregular trajectories detected by Trackpy.
+                
+                Parameters:
+                        data_frame (DataFrame): The DataFrame of trajectory information generated by Trackpy.
+                        particles (Dictionary of particles): The Dictionary containing all the particles extracted from the trajectory DataFrame with the format {keys = ID: values: particle}.
+                        filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+                        error_tolerance (double): The maximum sum of residuals between a particle&#39;s polyline and another particle&#39;s position coordinates allowing merging.
+                        angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+
+                Returns:
+                        data_frame (DataFrame): The DataFrame of trajectory information with all unrecoverable particle trajectories removed.
+        &#34;&#34;&#34;
+        for p in particles.copy().values():
+                if not len(p.irregular) == 0:
+                        new_particles = merge(data_frame, split(data_frame, p, filter_stub, angle), error_tolerance, angle)
+                        particles.pop(p.ID)
+
+                        for split_particles in new_particles:
+                                particles[split_particles.ID] = split_particles
+
+        return data_frame.loc[particle.used_index]</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="SandTracking.particle"><code class="flex name class">
+<span>class <span class="ident">particle</span></span>
+<span>(</span><span>ID)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>This is a class representing a single particle found by Trackpy</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class particle:
+        &#34;&#34;&#34;This is a class representing a single particle found by Trackpy&#34;&#34;&#34;
+
+        used_index = []
+        &#34;&#34;&#34;The integer list of DataFrame indices generated by Trackpy that pass filtering.&#34;&#34;&#34;
+
+        def __init__(self, ID):
+                self.index = []
+                &#34;&#34;&#34;The integer list of DataFrame indicies generated by Trackpy that the particle uses&#34;&#34;&#34;
+                self.ID = ID
+                &#34;&#34;&#34;The integer particle ID assigned by Trackpy when linking trajectories from features.&#34;&#34;&#34;
+                self.diameter = 0
+                &#34;&#34;&#34;The double averaged size of the particle in the frames it appears in, in pixels.&#34;&#34;&#34;
+                self.ecc = 0
+                &#34;&#34;&#34;The double averaged eccentricity of the particle in the frames it appears in.&#34;&#34;&#34;
+                self.polyline = None
+                &#34;&#34;&#34;The Numpy Polyline representing a quadratic polynomial line of best fit for the particle&#39;s position.&#34;&#34;&#34;
+
+                self.pos_derivative = ([], [], [], [])          
+                &#34;&#34;&#34;The tuple of the 0th, 1st, 2nd and 3rd derivatives of position, which is encoded as a list of tuples in the form
+                of (X, Y, Error, Frame)&#34;&#34;&#34;
+                self.irregular = []
+                &#34;&#34;&#34;The integer list of indicies where an irregular motion occurs.&#34;&#34;&#34;
+                self.average = []
+                &#34;&#34;&#34;he list of tuples representing a particle&#39;s average derivatives of position using the tuple (X, Y).&#34;&#34;&#34;
+
+        def add_index(self, coord, diameter, ecc, index):
+                &#34;&#34;&#34;
+                The method that adds the information in an index of TrackPy&#39;s trajectory DataFrame to it&#39;s associated particle.
+                        
+                Parameters:
+                        coord (single tuple of objects): The positional information of the particle using tuple (x (double), y (double), error (double), frame(double)).
+                        diameter (double): The diameter of the particle in pixels.
+                        ecc (double): The eccentricty of the particle.
+                        index (int): the index of the DataFrame being evaluated.
+                &#34;&#34;&#34;
+                self.diameter = (self.diameter * len(self.pos_derivative[0]) + diameter) / (len(self.pos_derivative[0]) + 1)
+                self.ecc = (self.ecc * len(self.pos_derivative[0]) + ecc) / (len(self.pos_derivative[0]) + 1)
+                self.index.append(index)
+                self.pos_derivative[0].append(coord)
+
+                if index not in self.used_index:
+                        self.used_index.append(index)
+
+        def calc_polyline(self):
+                &#34;&#34;&#34;
+                        The method that calculates a quadratic line of best fit for the particle&#39;s position coordinates.
+                &#34;&#34;&#34;
+                x = []
+                y = []
+
+                for i in range(0, len(self.pos_derivative[0])):
+                        x.append(self.pos_derivative[0][i][0])
+                        y.append(self.pos_derivative[0][i][1])
+
+                self.polyline = np.poly1d(np.polyfit(np.array(x), np.array(y), 2))
+
+        def calc_vel(self, angle):
+                &#34;&#34;&#34;
+                        The method that calculates the particle&#39;s velocity from its position.
+
+                        Parameters:
+                                angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+                &#34;&#34;&#34;
+                self.average.append((0, 0))
+
+                for i in range (0, len(self.pos_derivative[0]) - 1):
+                        dt = (self.pos_derivative[0][i + 1][3] - self.pos_derivative[0][i][3]) / frames_per_second
+                        t = (self.pos_derivative[0][i + 1][3] + self.pos_derivative[0][i][3]) / 2
+
+                        err = ((self.pos_derivative[0][i][2] * self.pos_derivative[0][i + 1][0] - self.pos_derivative[0][i + 1][2] * self.pos_derivative[0][i][0]) / dt, 
+                                (self.pos_derivative[0][i][2] * self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i + 1][2] * self.pos_derivative[0][i][1]) / dt)
+
+                        self.pos_derivative[1].append(((self.pos_derivative[0][i + 1][0] - self.pos_derivative[0][i][0]) / dt, 
+                                (self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i][1]) / dt, err, t))
+                        self.average[-1]  = (self.average[-1][0] + self.pos_derivative[1][-1][0], self.average[-1][1] + self.pos_derivative[1][-1][1])
+
+                        if len(self.pos_derivative[1]) &gt; 1 and get_cos(self.pos_derivative[1][-1], self.pos_derivative[1][-2]) &lt; math.cos(angle):
+                                self.irregular.append(self.index[i])
+
+                self.average[-1] = (self.average[-1][0] / len(self.pos_derivative[1]), self.average[-1][1] / len(self.pos_derivative[1]))
+
+        def calc_accel(self):
+                &#34;&#34;&#34;The method that calculates a particle&#39;s acceleration from its velocity.&#34;&#34;&#34;
+                self.average.append((0, 0))
+
+                for i in range (0, len(self.pos_derivative[1]) - 1):
+                        dt = (self.pos_derivative[1][i + 1][3] - self.pos_derivative[1][i][3]) / frames_per_second
+                        t = (self.pos_derivative[1][i + 1][3] + self.pos_derivative[1][i][3]) / 2
+
+                        err = ((self.pos_derivative[1][i][2][0] * self.pos_derivative[1][i + 1][0] - self.pos_derivative[1][i + 1][2][0] * self.pos_derivative[1][i][0]) / dt, 
+                                (self.pos_derivative[1][i][2][1] * self.pos_derivative[1][i + 1][1] - self.pos_derivative[1][i + 1][2][1] * self.pos_derivative[1][i][1]) / dt)
+
+                        self.pos_derivative[2].append(((self.pos_derivative[1][i + 1][0] - self.pos_derivative[1][i][0]) / dt, 
+                                (self.pos_derivative[1][i + 1][1] - self.pos_derivative[1][i][1]) / dt, err, t))
+                        self.average[-1]  = ((self.average[-1][0] * len(self.pos_derivative[2]) + self.pos_derivative[2][-1][0]) / (len(self.pos_derivative[2]) + 1), 
+                                                                (self.average[-1][1] * len(self.pos_derivative[2]) + self.pos_derivative[2][-1][1]) / (len(self.pos_derivative[2]) + 1))
+
+        def calc_jerk(self):
+                &#34;&#34;&#34;The method that calculates a particle&#39;s jerk from its acceration.&#34;&#34;&#34;
+                self.average.append((0, 0))
+
+                for i in range (0, len(self.pos_derivative[2]) - 1):
+                        dt = (self.pos_derivative[2][i + 1][3] - self.pos_derivative[2][i][3]) / frames_per_second
+                        t = (self.pos_derivative[2][i + 1][3] + self.pos_derivative[2][i][3]) / 2
+
+                        err = ((self.pos_derivative[2][i][2][0] * self.pos_derivative[2][i + 1][0] - self.pos_derivative[2][i + 1][2][0] * self.pos_derivative[2][i][0]) / dt, 
+                                (self.pos_derivative[2][i][2][1] * self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i + 1][2][1] * self.pos_derivative[2][i][1]) / dt)
+
+                        self.pos_derivative[3].append(((self.pos_derivative[2][i + 1][0] - self.pos_derivative[2][i][0]) / dt, 
+                                (self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i][1]) / dt, err, t))
+                        self.average[-1]  = (self.average[-1][0] + self.pos_derivative[3][-1][0], self.average[-1][1] + self.pos_derivative[3][-1][1])
+
+        def analyze(self, angle):
+                &#34;&#34;&#34;
+                        The method that calculates all derivatives of position and the polyline of a particle.
+
+                        Parameter:
+                                angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+                &#34;&#34;&#34;
+                self.calc_polyline()
+                self.calc_vel(angle)
+                self.calc_accel()
+                self.calc_jerk()</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="SandTracking.particle.used_index"><code class="name">var <span class="ident">used_index</span></code></dt>
+<dd>
+<section class="desc"><p>The integer list of DataFrame indices generated by Trackpy that pass filtering.</p></section>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="SandTracking.particle.ID"><code class="name">var <span class="ident">ID</span></code></dt>
+<dd>
+<section class="desc"><p>The integer particle ID assigned by Trackpy when linking trajectories from features.</p></section>
+</dd>
+<dt id="SandTracking.particle.average"><code class="name">var <span class="ident">average</span></code></dt>
+<dd>
+<section class="desc"><p>he list of tuples representing a particle's average derivatives of position using the tuple (X, Y).</p></section>
+</dd>
+<dt id="SandTracking.particle.diameter"><code class="name">var <span class="ident">diameter</span></code></dt>
+<dd>
+<section class="desc"><p>The double averaged size of the particle in the frames it appears in, in pixels.</p></section>
+</dd>
+<dt id="SandTracking.particle.ecc"><code class="name">var <span class="ident">ecc</span></code></dt>
+<dd>
+<section class="desc"><p>The double averaged eccentricity of the particle in the frames it appears in.</p></section>
+</dd>
+<dt id="SandTracking.particle.index"><code class="name">var <span class="ident">index</span></code></dt>
+<dd>
+<section class="desc"><p>The integer list of DataFrame indicies generated by Trackpy that the particle uses</p></section>
+</dd>
+<dt id="SandTracking.particle.irregular"><code class="name">var <span class="ident">irregular</span></code></dt>
+<dd>
+<section class="desc"><p>The integer list of indicies where an irregular motion occurs.</p></section>
+</dd>
+<dt id="SandTracking.particle.polyline"><code class="name">var <span class="ident">polyline</span></code></dt>
+<dd>
+<section class="desc"><p>The Numpy Polyline representing a quadratic polynomial line of best fit for the particle's position.</p></section>
+</dd>
+<dt id="SandTracking.particle.pos_derivative"><code class="name">var <span class="ident">pos_derivative</span></code></dt>
+<dd>
+<section class="desc"><p>The tuple of the 0th, 1st, 2nd and 3rd derivatives of position, which is encoded as a list of tuples in the form
+of (X, Y, Error, Frame)</p></section>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="SandTracking.particle.add_index"><code class="name flex">
+<span>def <span class="ident">add_index</span></span>(<span>self, coord, diameter, ecc, index)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The method that adds the information in an index of TrackPy's trajectory DataFrame to it's associated particle.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>coord</code></strong> :&ensp;<code>single</code> <code>tuple</code> of <code>objects</code></dt>
+<dd>The positional information of the particle using tuple (x (double), y (double), error (double), frame(double)).</dd>
+<dt><strong><code>diameter</code></strong> :&ensp;<code>double</code></dt>
+<dd>The diameter of the particle in pixels.</dd>
+<dt><strong><code>ecc</code></strong> :&ensp;<code>double</code></dt>
+<dd>The eccentricty of the particle.</dd>
+<dt><strong><code>index</code></strong> :&ensp;<code>int</code></dt>
+<dd>the index of the DataFrame being evaluated.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def add_index(self, coord, diameter, ecc, index):
+        &#34;&#34;&#34;
+        The method that adds the information in an index of TrackPy&#39;s trajectory DataFrame to it&#39;s associated particle.
+                
+        Parameters:
+                coord (single tuple of objects): The positional information of the particle using tuple (x (double), y (double), error (double), frame(double)).
+                diameter (double): The diameter of the particle in pixels.
+                ecc (double): The eccentricty of the particle.
+                index (int): the index of the DataFrame being evaluated.
+        &#34;&#34;&#34;
+        self.diameter = (self.diameter * len(self.pos_derivative[0]) + diameter) / (len(self.pos_derivative[0]) + 1)
+        self.ecc = (self.ecc * len(self.pos_derivative[0]) + ecc) / (len(self.pos_derivative[0]) + 1)
+        self.index.append(index)
+        self.pos_derivative[0].append(coord)
+
+        if index not in self.used_index:
+                self.used_index.append(index)</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.particle.analyze"><code class="name flex">
+<span>def <span class="ident">analyze</span></span>(<span>self, angle)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The method that calculates all derivatives of position and the polyline of a particle.</p>
+<h2 id="parameter">Parameter</h2>
+<dl>
+<dt><strong><code>angle</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum angle in radians a particle can move between positions before it's considered an irregular motion.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def analyze(self, angle):
+        &#34;&#34;&#34;
+                The method that calculates all derivatives of position and the polyline of a particle.
+
+                Parameter:
+                        angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+        &#34;&#34;&#34;
+        self.calc_polyline()
+        self.calc_vel(angle)
+        self.calc_accel()
+        self.calc_jerk()</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.particle.calc_accel"><code class="name flex">
+<span>def <span class="ident">calc_accel</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The method that calculates a particle's acceleration from its velocity.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def calc_accel(self):
+        &#34;&#34;&#34;The method that calculates a particle&#39;s acceleration from its velocity.&#34;&#34;&#34;
+        self.average.append((0, 0))
+
+        for i in range (0, len(self.pos_derivative[1]) - 1):
+                dt = (self.pos_derivative[1][i + 1][3] - self.pos_derivative[1][i][3]) / frames_per_second
+                t = (self.pos_derivative[1][i + 1][3] + self.pos_derivative[1][i][3]) / 2
+
+                err = ((self.pos_derivative[1][i][2][0] * self.pos_derivative[1][i + 1][0] - self.pos_derivative[1][i + 1][2][0] * self.pos_derivative[1][i][0]) / dt, 
+                        (self.pos_derivative[1][i][2][1] * self.pos_derivative[1][i + 1][1] - self.pos_derivative[1][i + 1][2][1] * self.pos_derivative[1][i][1]) / dt)
+
+                self.pos_derivative[2].append(((self.pos_derivative[1][i + 1][0] - self.pos_derivative[1][i][0]) / dt, 
+                        (self.pos_derivative[1][i + 1][1] - self.pos_derivative[1][i][1]) / dt, err, t))
+                self.average[-1]  = ((self.average[-1][0] * len(self.pos_derivative[2]) + self.pos_derivative[2][-1][0]) / (len(self.pos_derivative[2]) + 1), 
+                                                        (self.average[-1][1] * len(self.pos_derivative[2]) + self.pos_derivative[2][-1][1]) / (len(self.pos_derivative[2]) + 1))</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.particle.calc_jerk"><code class="name flex">
+<span>def <span class="ident">calc_jerk</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The method that calculates a particle's jerk from its acceration.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def calc_jerk(self):
+        &#34;&#34;&#34;The method that calculates a particle&#39;s jerk from its acceration.&#34;&#34;&#34;
+        self.average.append((0, 0))
+
+        for i in range (0, len(self.pos_derivative[2]) - 1):
+                dt = (self.pos_derivative[2][i + 1][3] - self.pos_derivative[2][i][3]) / frames_per_second
+                t = (self.pos_derivative[2][i + 1][3] + self.pos_derivative[2][i][3]) / 2
+
+                err = ((self.pos_derivative[2][i][2][0] * self.pos_derivative[2][i + 1][0] - self.pos_derivative[2][i + 1][2][0] * self.pos_derivative[2][i][0]) / dt, 
+                        (self.pos_derivative[2][i][2][1] * self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i + 1][2][1] * self.pos_derivative[2][i][1]) / dt)
+
+                self.pos_derivative[3].append(((self.pos_derivative[2][i + 1][0] - self.pos_derivative[2][i][0]) / dt, 
+                        (self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i][1]) / dt, err, t))
+                self.average[-1]  = (self.average[-1][0] + self.pos_derivative[3][-1][0], self.average[-1][1] + self.pos_derivative[3][-1][1])</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.particle.calc_polyline"><code class="name flex">
+<span>def <span class="ident">calc_polyline</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The method that calculates a quadratic line of best fit for the particle's position coordinates.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def calc_polyline(self):
+        &#34;&#34;&#34;
+                The method that calculates a quadratic line of best fit for the particle&#39;s position coordinates.
+        &#34;&#34;&#34;
+        x = []
+        y = []
+
+        for i in range(0, len(self.pos_derivative[0])):
+                x.append(self.pos_derivative[0][i][0])
+                y.append(self.pos_derivative[0][i][1])
+
+        self.polyline = np.poly1d(np.polyfit(np.array(x), np.array(y), 2))</code></pre>
+</details>
+</dd>
+<dt id="SandTracking.particle.calc_vel"><code class="name flex">
+<span>def <span class="ident">calc_vel</span></span>(<span>self, angle)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>The method that calculates the particle's velocity from its position.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>angle</code></strong> :&ensp;<code>double</code></dt>
+<dd>The maximum angle in radians a particle can move between positions before it's considered an irregular motion.</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def calc_vel(self, angle):
+        &#34;&#34;&#34;
+                The method that calculates the particle&#39;s velocity from its position.
+
+                Parameters:
+                        angle (double): The maximum angle in radians a particle can move between positions before it&#39;s considered an irregular motion.
+        &#34;&#34;&#34;
+        self.average.append((0, 0))
+
+        for i in range (0, len(self.pos_derivative[0]) - 1):
+                dt = (self.pos_derivative[0][i + 1][3] - self.pos_derivative[0][i][3]) / frames_per_second
+                t = (self.pos_derivative[0][i + 1][3] + self.pos_derivative[0][i][3]) / 2
+
+                err = ((self.pos_derivative[0][i][2] * self.pos_derivative[0][i + 1][0] - self.pos_derivative[0][i + 1][2] * self.pos_derivative[0][i][0]) / dt, 
+                        (self.pos_derivative[0][i][2] * self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i + 1][2] * self.pos_derivative[0][i][1]) / dt)
+
+                self.pos_derivative[1].append(((self.pos_derivative[0][i + 1][0] - self.pos_derivative[0][i][0]) / dt, 
+                        (self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i][1]) / dt, err, t))
+                self.average[-1]  = (self.average[-1][0] + self.pos_derivative[1][-1][0], self.average[-1][1] + self.pos_derivative[1][-1][1])
+
+                if len(self.pos_derivative[1]) &gt; 1 and get_cos(self.pos_derivative[1][-1], self.pos_derivative[1][-2]) &lt; math.cos(angle):
+                        self.irregular.append(self.index[i])
+
+        self.average[-1] = (self.average[-1][0] / len(self.pos_derivative[1]), self.average[-1][1] / len(self.pos_derivative[1]))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="SandTracking.frames_per_second" href="#SandTracking.frames_per_second">frames_per_second</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="SandTracking.evaluate_features" href="#SandTracking.evaluate_features">evaluate_features</a></code></li>
+<li><code><a title="SandTracking.evaluate_trajectories" href="#SandTracking.evaluate_trajectories">evaluate_trajectories</a></code></li>
+<li><code><a title="SandTracking.export" href="#SandTracking.export">export</a></code></li>
+<li><code><a title="SandTracking.extract_particles" href="#SandTracking.extract_particles">extract_particles</a></code></li>
+<li><code><a title="SandTracking.fixed_filter_stubs" href="#SandTracking.fixed_filter_stubs">fixed_filter_stubs</a></code></li>
+<li><code><a title="SandTracking.get_cos" href="#SandTracking.get_cos">get_cos</a></code></li>
+<li><code><a title="SandTracking.merge" href="#SandTracking.merge">merge</a></code></li>
+<li><code><a title="SandTracking.postfiltering" href="#SandTracking.postfiltering">postfiltering</a></code></li>
+<li><code><a title="SandTracking.split" href="#SandTracking.split">split</a></code></li>
+<li><code><a title="SandTracking.to_grey" href="#SandTracking.to_grey">to_grey</a></code></li>
+<li><code><a title="SandTracking.unfilter_jumps" href="#SandTracking.unfilter_jumps">unfilter_jumps</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="SandTracking.particle" href="#SandTracking.particle">particle</a></code></h4>
+<ul class="two-column">
+<li><code><a title="SandTracking.particle.ID" href="#SandTracking.particle.ID">ID</a></code></li>
+<li><code><a title="SandTracking.particle.add_index" href="#SandTracking.particle.add_index">add_index</a></code></li>
+<li><code><a title="SandTracking.particle.analyze" href="#SandTracking.particle.analyze">analyze</a></code></li>
+<li><code><a title="SandTracking.particle.average" href="#SandTracking.particle.average">average</a></code></li>
+<li><code><a title="SandTracking.particle.calc_accel" href="#SandTracking.particle.calc_accel">calc_accel</a></code></li>
+<li><code><a title="SandTracking.particle.calc_jerk" href="#SandTracking.particle.calc_jerk">calc_jerk</a></code></li>
+<li><code><a title="SandTracking.particle.calc_polyline" href="#SandTracking.particle.calc_polyline">calc_polyline</a></code></li>
+<li><code><a title="SandTracking.particle.calc_vel" href="#SandTracking.particle.calc_vel">calc_vel</a></code></li>
+<li><code><a title="SandTracking.particle.diameter" href="#SandTracking.particle.diameter">diameter</a></code></li>
+<li><code><a title="SandTracking.particle.ecc" href="#SandTracking.particle.ecc">ecc</a></code></li>
+<li><code><a title="SandTracking.particle.index" href="#SandTracking.particle.index">index</a></code></li>
+<li><code><a title="SandTracking.particle.irregular" href="#SandTracking.particle.irregular">irregular</a></code></li>
+<li><code><a title="SandTracking.particle.polyline" href="#SandTracking.particle.polyline">polyline</a></code></li>
+<li><code><a title="SandTracking.particle.pos_derivative" href="#SandTracking.particle.pos_derivative">pos_derivative</a></code></li>
+<li><code><a title="SandTracking.particle.used_index" href="#SandTracking.particle.used_index">used_index</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
