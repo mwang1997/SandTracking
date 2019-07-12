@@ -71,12 +71,14 @@ class particle:
 
 		self.polyline = np.poly1d(np.polyfit(np.array(x), np.array(y), 2))
 
-	def calc_vel(self, angle):
+	def calc_vel(self, angle, x_restriction = 0, y_restriction = 0):
 		"""
 			The method that calculates the particle's velocity from its position.
 
 			Parameters:
 				angle (double): The maximum angle in radians a particle can move between positions before it's considered an irregular motion.
+				x_restriction (double): The tuple describing the restriction of x motion, all motion in the sign of x_restriction is considered irregular.
+				y_restriction (double): The tuple describing the restriction of y motion, all motion in the sign of x_restriction is considered irregular.
 		"""
 		self.average.append((0, 0))
 
@@ -91,7 +93,8 @@ class particle:
 				(self.pos_derivative[0][i + 1][1] - self.pos_derivative[0][i][1]) / dt, err, t))
 			self.average[-1]  = (self.average[-1][0] + self.pos_derivative[1][-1][0], self.average[-1][1] + self.pos_derivative[1][-1][1])
 
-			if len(self.pos_derivative[1]) > 1 and get_cos(self.pos_derivative[1][-1], self.pos_derivative[1][-2]) < math.cos(angle):
+			if len(self.pos_derivative[1]) > 1 and (get_cos(self.pos_derivative[1][-1], self.pos_derivative[1][-2]) < math.cos(angle) or 
+				self.pos_derivative[1][-1][0] * x_restriction > 0 or self.pos_derivative[1][-1][1] * y_restriction > 0):
 				self.irregular.append(self.index[i])
 
 		self.average[-1] = (self.average[-1][0] / len(self.pos_derivative[1]), self.average[-1][1] / len(self.pos_derivative[1]))
@@ -127,15 +130,17 @@ class particle:
 				(self.pos_derivative[2][i + 1][1] - self.pos_derivative[2][i][1]) / dt, err, t))
 			self.average[-1]  = (self.average[-1][0] + self.pos_derivative[3][-1][0], self.average[-1][1] + self.pos_derivative[3][-1][1])
 
-	def analyze(self, angle):
+	def analyze(self, angle, x_restriction = 0, y_restriction = 0):
 		"""
 			The method that calculates all derivatives of position and the polyline of a particle.
 
 			Parameter:
 				angle (double): The maximum angle in radians a particle can move between positions before it's considered an irregular motion.
+				x_restriction (double): The tuple describing the restriction of x motion, all motion in the sign of x_restriction is considered irregular.
+				y_restriction (double): The tuple describing the restriction of y motion, all motion in the sign of x_restriction is considered irregular.
 		"""
 		self.calc_polyline()
-		self.calc_vel(angle)
+		self.calc_vel(angle, x_restriction, y_restriction)
 		self.calc_accel()
 		self.calc_jerk()
 
@@ -164,9 +169,18 @@ def to_grey(frame):
 
 	return red * 0.2125 + green * 0.7154 + blue * 0.0721
 
+def process_video(video_name):
+	"""
+		The function that converts a video to a list of greyscale NumpyArrays.
+
+		Parameters:
+			video_name (String): The name of the video to be evaluated stored in the Recordings folder.
+	"""
+	return to_grey(pims.PyAVReaderTimed(video_name))
+
 def evaluate_features(video_name, particle_size, particle_minmass, start_frame, length, noise):
 	"""
-		The function that converts a video to a greyscale NumpyArray and then runs Trackpy's feature detection algorithm on the arrays.
+		The function that  runs Trackpy's feature detection algorithm on the arrays.
 
 		Parameters:
 			video_name (String): The name of the video to be evaluated stored in the Recordings folder.
@@ -178,8 +192,8 @@ def evaluate_features(video_name, particle_size, particle_minmass, start_frame, 
 		Returns:
 			frame (DataFrame): The DataFrame of the features found in the video.
 	"""
-	frames = to_grey(pims.PyAVReaderTimed(video_name))
-	f = tp.batch(frames[start_frame: start_frame + length], particle_size, minmass = particle_minmass, noise_size = noise)
+	video_frames = process_video(video_name)
+	f = tp.batch(video_frames[start_frame: start_frame + length], particle_size, minmass = particle_minmass, noise_size = noise)
 
 	return f
 
@@ -225,7 +239,7 @@ def extract_particles(data_frame):
 
 	return particles
 
-def split(data_frame, p, filter_stub, angle):
+def split(data_frame, p, filter_stub, angle, x_restriction = 0, y_restriction = 0):
 		"""
 			The function that splits a single trajectory into recoverable trajectories if there is an irregular motion in the original trajectory.
 
@@ -234,6 +248,8 @@ def split(data_frame, p, filter_stub, angle):
 				p (particle): The particle that displayed irregular motion.
 				filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
 				angle (double): The maximum angle in radians a particle can move between positions before it's considered an irregular motion.
+				x_restriction (double): The tuple describing the restriction of x motion, all motion in the sign of x_restriction is considered irregular.
+				y_restriction (double): The tuple describing the restriction of y motion, all motion in the sign of x_restriction is considered irregular.
 
 			Returns:
 				return_particles (list of particles): The list of particles generated from the input irregular particle.
@@ -263,7 +279,7 @@ def split(data_frame, p, filter_stub, angle):
 					particle.used_index.remove(x)
 
 		for rp in return_particles:
-			rp.analyze(angle)
+			rp.analyze(angle, x_restriction, y_restriction)
 
 			for x in rp.index:
 				data_frame.at[x, "particle"] = rp.ID
@@ -272,7 +288,7 @@ def split(data_frame, p, filter_stub, angle):
 
 		return return_particles
 
-def merge(data_frame, particles, error_tolerance, angle):
+def merge(data_frame, particles, error_tolerance, angle, x_restriction = 0, y_restriction = 0):
 	"""
 		The function that takes a list of previously split particles and merges them if they're very similar in trajectory.
 
@@ -281,6 +297,8 @@ def merge(data_frame, particles, error_tolerance, angle):
 			particles (list of particles): The list of particle generated from an irregular particle.
 			error_tolerance (double): The maximum sum of residuals between a particle's polyline and another particle's position coordinates allowing merging.
 			angle (double): The maximum angle in radians a particle can move between positions before it's considered an irregular motion.
+			x_restriction (double): The tuple describing the restriction of x motion, all motion in the sign of x_restriction is considered irregular.
+			y_restriction (double): The tuple describing the restriction of y motion, all motion in the sign of x_restriction is considered irregular.
 
 		Returns:
 			particles (list of particles): The list of particles after remerging previously split particles.
@@ -309,14 +327,16 @@ def merge(data_frame, particles, error_tolerance, angle):
 								particles[i].add_index((data_frame.at[x, "x"], data_frame.at[x, "y"], data_frame.at[x, "ep"], data_frame.at[x, "frame"]), 
 													data_frame.at[x, "size"] * 2, data_frame.at[x, "ecc"], x)
 
-							particles[i].analyze(angle)
+							particles[i].analyze(angle, x_restriction, y_restriction)
+							break
 
 						if particles[i].ID == p2.ID:
 							particles.pop(i)
+							break
 
 	return particles
 
-def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle):
+def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle, x_restriction = 0, y_restriction = 0):
 	"""
 		The function that fixes irregular trajectories detected by Trackpy.
 		
@@ -326,6 +346,8 @@ def unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle):
 			filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
 			error_tolerance (double): The maximum sum of residuals between a particle's polyline and another particle's position coordinates allowing merging.
 			angle (double): The maximum angle in radians a particle can move between positions before it's considered an irregular motion.
+			x_restriction (double): The tuple describing the restriction of x motion, all motion in the sign of x_restriction is considered irregular.
+			y_restriction (double): The tuple describing the restriction of y motion, all motion in the sign of x_restriction is considered irregular.
 
 		Returns:
 			data_frame (DataFrame): The DataFrame of trajectory information with all unrecoverable particle trajectories removed.
@@ -351,12 +373,12 @@ def fixed_filter_stubs(data_frame, i):
 		Returns:
 			t (Data_Frame): The DataFrame of the trajectory information of particles that exist in more frames than i.
 	"""
-	t = tp.filter_stubs(data_frame, i)
+	t = tp.filter_stubs(data_frame.copy(), i)
 	t.index = range(0, len(t))
 
 	return t
 
-def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tolerance, filter_stub):
+def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tolerance, filter_stub, x_restriction = 0, y_restriction = 0):
 	"""
 		The function that filters out particles based on its velocity, degree of irregularity, and how many frames it's in.
 
@@ -367,6 +389,8 @@ def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tole
 			tolerance (int): The maximum amount of irregularities a particle can have before it is considered too irregular to evaluate.
 			error_tolerance (double): The maximum sum of residuals between a particle's polyline and another particle's position coordinates allowing merging.
 			filter_stub (int): The minimum amount of frames the recoverable trajectories must persist for.
+			x_restriction (double): The tuple describing the restriction of x motion, all motion in the sign of x_restriction is considered irregular.
+			y_restriction (double): The tuple describing the restriction of y motion, all motion in the sign of x_restriction is considered irregular.
 
 		Returns:
 			data_frame (DataFrame): The DataFrame of trajectory information filtered by the function.
@@ -376,7 +400,7 @@ def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tole
 		tolerance = math.inf
 
 	for p in particles.copy().values():
-		p.analyze(angle)
+		p.analyze(angle, x_restriction, y_restriction)
 
 		if (abs(p.average[0][1]) < stillness and abs(p.average[0][1] < stillness)) or len(p.irregular) > tolerance:
 			particles.pop(p.ID)
@@ -384,7 +408,7 @@ def postfiltering(data_frame, particles, stillness, tolerance, angle, error_tole
 			for i in p.index:
 				particle.used_index.remove(i)
 
-	unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle)
+	unfilter_jumps(data_frame, particles, filter_stub, error_tolerance, angle, x_restriction, y_restriction)
 
 	return data_frame.loc[particle.used_index]
 
@@ -466,3 +490,32 @@ def traj_plot(data_frame):
 	plt.figure()
 	tp.plot_traj(data_frame)
 	plt.show()
+
+def get_frame(video_name, i, particle_size = None):
+	"""
+		The function that displays a frame of the video, optionally with its features circled.
+
+		Parameters:
+			video_name (String): The name of the video file in the Recordings folder to be processed
+			i (int): The frame of the video to display.
+			particle_size (int): The odd number average pixel size of a feature. Leave blank in order to only display the frame.
+	"""
+	video_frames = process_video(video_name)
+	fig = plt.figure()
+
+	if particle_size is not None:	
+		f = tp.locate(video_frames[i], particle_size)
+		tp.annotate(f, video_frames[i])
+		plt.show()
+	else:
+		plt.imshow(video_frames[i])
+
+
+
+
+
+
+
+
+
+
